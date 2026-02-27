@@ -4,9 +4,328 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Navraj Kumar Yadav - Portfolio</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+/* ── Reset & Variables ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --black: #040404;
+    --white: #ffffff;
+    --gray: #1a1a1a;
+    --light-gray: #f5f5f5;
+    --medium-gray: #666666;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* ── Custom Cursor ── */
+.cursor {
+    width: 20px; height: 20px;
+    border: 2px solid var(--black);
+    border-radius: 50%;
+    position: fixed; pointer-events: none;
+    z-index: 9999; transition: all 0.15s ease;
+    transform: translate(-50%, -50%);
+}
+.cursor-follower {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 50%;
+    position: fixed; pointer-events: none;
+    z-index: 9998; transition: all 0.4s ease;
+    transform: translate(-50%, -50%);
+}
+
+/* ── Page Loader ── */
+.page-loader {
+    position: fixed; inset: 0;
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000; transition: opacity 0.5s ease;
+}
+.page-loader.hidden { opacity: 0; pointer-events: none; }
+.loader-text {
+    font-size: 4rem; font-weight: bold; letter-spacing: -3px;
+    animation: loaderPulse 1.5s ease infinite;
+}
+@keyframes loaderPulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.3; transform:scale(0.95); }
+}
+
+/* ── Navigation ── */
+nav {
+    position: fixed; top: 0; width: 100%;
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem 5%;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    animation: slideDown 0.8s ease;
+}
+@keyframes slideDown { from { transform:translateY(-100%); } to { transform:translateY(0); } }
+
+.logo { font-size:1.3rem; font-weight:bold; letter-spacing:1px; cursor:pointer; transition:all 0.3s ease; }
+.logo:hover { transform:scale(1.05); }
+
+nav ul { display:flex; list-style:none; gap:3rem; }
+nav a {
+    text-decoration:none; color:var(--black); font-weight:500;
+    position:relative; transition:all 0.3s ease;
+    font-size:0.9rem; letter-spacing:1px;
+}
+nav a::after {
+    content:''; position:absolute; bottom:-5px; left:0;
+    width:0; height:2px; background:var(--black); transition:width 0.3s ease;
+}
+nav a:hover::after { width:100%; }
+
+.menu-toggle { display:none; flex-direction:column; cursor:pointer; gap:5px; }
+.menu-toggle span { width:30px; height:2px; background:var(--black); transition:0.3s; }
+
+/* ── Hero ── */
+.hero {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#f5f5f5 0%,#ffffff 100%);
+}
+.hero-grid {
+    position:absolute; width:100%; height:100%;
+    background-image:
+        linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);
+    background-size:50px 50px;
+    animation:gridMove 20s linear infinite;
+}
+@keyframes gridMove { 0%{transform:translate(0,0);} 100%{transform:translate(50px,50px);} }
+
+.floating-shape { position:absolute; border:2px solid var(--black); opacity:0.1; animation:float 8s ease-in-out infinite; }
+.shape1{width:120px;height:120px;top:15%;left:10%;animation-delay:0s;}
+.shape2{width:180px;height:180px;border-radius:50%;top:60%;right:10%;animation-delay:2s;}
+.shape3{width:100px;height:100px;top:35%;right:20%;transform:rotate(45deg);animation-delay:4s;}
+.shape4{width:150px;height:150px;bottom:10%;left:15%;border-radius:50%;animation-delay:6s;}
+@keyframes float {
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-40px) rotate(180deg);}
+}
+
+.hero-content { text-align:center; z-index:2; max-width:900px; padding:2rem; }
+.hero-label { font-size:0.9rem; letter-spacing:3px; text-transform:uppercase; margin-bottom:1rem; opacity:0; animation:fadeInUp 1s ease forwards 0.2s; }
+.hero h1 { font-size:5.5rem; font-weight:900; letter-spacing:-4px; margin-bottom:1.5rem; line-height:1.1; opacity:0; animation:fadeInUp 1s ease forwards 0.4s; }
+.hero .subtitle { font-size:1.8rem; letter-spacing:1px; margin-bottom:1rem; font-weight:300; opacity:0; animation:fadeInUp 1s ease forwards 0.6s; }
+.hero .description { font-size:1.1rem; max-width:700px; margin:2rem auto; line-height:1.8; color:var(--medium-gray); opacity:0; animation:fadeInUp 1s ease forwards 0.8s; }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(40px);} to{opacity:1;transform:translateY(0);} }
+
+.hero-buttons { display:flex; gap:1.5rem; justify-content:center; margin-top:3rem; opacity:0; animation:fadeInUp 1s ease forwards 1s; }
+
+.btn { padding:1.2rem 3rem; text-decoration:none; font-weight:bold; letter-spacing:2px; position:relative; overflow:hidden; transition:all 0.3s ease; border:2px solid var(--black); font-size:0.9rem; }
+.btn-primary { background:var(--black); color:var(--white); }
+.btn-primary::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:var(--white); transition:left 0.5s ease; z-index:0; }
+.btn-primary:hover::before { left:0; }
+.btn-primary:hover { color:var(--black); }
+.btn span { position:relative; z-index:1; }
+.btn-secondary { background:transparent; color:var(--black); }
+.btn-secondary:hover { background:var(--black); color:var(--white); }
+
+.scroll-indicator { position:absolute; bottom:40px; left:50%; transform:translateX(-50%); animation:bounce 2s infinite; }
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(15px);} }
+.scroll-indicator span { display:block; width:2px; height:40px; background:var(--black); margin:0 auto; }
+
+/* ── Sections ── */
+section { padding:8rem 5%; position:relative; }
+section:nth-child(even) { background:var(--light-gray); }
+.container { max-width:1200px; margin:0 auto; }
+.section-header { text-align:center; margin-bottom:5rem; }
+.section-label { font-size:0.9rem; letter-spacing:3px; text-transform:uppercase; margin-bottom:1rem; color:var(--medium-gray); }
+.section-title { font-size:3.5rem; font-weight:bold; letter-spacing:-2px; margin-bottom:1.5rem; }
+.section-description { font-size:1.1rem; color:var(--medium-gray); max-width:700px; margin:0 auto; line-height:1.8; }
+
+/* ── Stats ── */
+.stats-section { background:var(--black); color:var(--white); text-align:center; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:3rem; margin-top:3rem; }
+.stat-item { opacity:0; transform:scale(0.8); transition:all 0.6s ease; }
+.stat-item.show { opacity:1; transform:scale(1); }
+.stat-number { font-size:4rem; font-weight:bold; margin-bottom:0.5rem; display:block; }
+.stat-label { font-size:1rem; letter-spacing:2px; text-transform:uppercase; opacity:0.8; }
+
+/* ── Skills ── */
+.skills-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; }
+.skill-card { background:var(--white); padding:3rem 2rem; border:2px solid var(--black); position:relative; transition:all 0.4s ease; overflow:hidden; opacity:0; transform:translateY(50px); }
+.skill-card.show { opacity:1; transform:translateY(0); }
+.skill-card::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:var(--black); transition:left 0.5s ease; z-index:0; }
+.skill-card:hover::before { left:0; }
+.skill-card:hover { transform:translateY(-10px); }
+.skill-card h3 { font-size:1.5rem; margin-bottom:1.5rem; position:relative; z-index:1; transition:color 0.3s ease; }
+.skill-card:hover h3 { color:var(--white); }
+.skill-card ul { list-style:none; position:relative; z-index:1; }
+.skill-card li { padding:0.7rem 0; border-bottom:1px solid rgba(0,0,0,0.1); font-size:0.95rem; transition:all 0.3s ease; }
+.skill-card:hover li { color:var(--white); border-bottom-color:rgba(255,255,255,0.2); }
+
+/* ── Timeline ── */
+.timeline { position:relative; max-width:1000px; margin:4rem auto; }
+.timeline::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:2px; background:var(--black); transform:translateX(-50%); }
+.timeline-item { position:relative; margin-bottom:4rem; opacity:0; transform:translateY(50px); transition:all 0.6s ease; }
+.timeline-item.show { opacity:1; transform:translateY(0); }
+.timeline-content { width:45%; padding:2.5rem; background:var(--white); border:2px solid var(--black); position:relative; }
+.timeline-item:nth-child(odd) .timeline-content { margin-left:auto; }
+.timeline-content::before { content:''; position:absolute; top:30px; width:20px; height:20px; background:var(--black); border-radius:50%; }
+.timeline-item:nth-child(odd) .timeline-content::before { left:-60px; }
+.timeline-item:nth-child(even) .timeline-content::before { right:-60px; }
+.timeline-date { font-weight:bold; font-size:0.9rem; letter-spacing:2px; margin-bottom:1rem; text-transform:uppercase; }
+.timeline-content h3 { font-size:1.6rem; margin-bottom:0.5rem; }
+.timeline-content h4 { font-size:1.1rem; color:var(--medium-gray); margin-bottom:1.5rem; font-weight:normal; }
+.timeline-content ul { list-style:none; margin-top:1rem; }
+.timeline-content li { padding:0.5rem 0; padding-left:1.5rem; position:relative; line-height:1.6; }
+.timeline-content li::before { content:'→'; position:absolute; left:0; }
+
+/* ── Projects ── */
+.projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); gap:3rem; }
+.project-card { background:var(--white); border:2px solid var(--black); overflow:hidden; transition:all 0.4s ease; position:relative; opacity:0; transform:translateY(50px); }
+.project-card.show { opacity:1; transform:translateY(0); }
+.project-card::after { content:''; position:absolute; top:0; left:0; width:0; height:100%; background:var(--black); transition:width 0.5s ease; z-index:0; }
+.project-card:hover::after { width:100%; }
+.project-card:hover { transform:translateY(-10px) scale(1.02); }
+.project-header { padding:2.5rem; position:relative; z-index:1; transition:color 0.3s ease; }
+.project-card:hover .project-header { color:var(--white); }
+.project-number { font-size:0.9rem; letter-spacing:3px; margin-bottom:1rem; font-weight:bold; }
+.project-header h3 { font-size:1.8rem; margin-bottom:1.5rem; line-height:1.3; }
+.project-header ul { list-style:none; }
+.project-header li { padding:0.6rem 0; padding-left:1.5rem; position:relative; line-height:1.6; }
+.project-header li::before { content:'▪'; position:absolute; left:0; }
+
+/* ── Contact ── */
+.contact-container { max-width:700px; margin:4rem auto; }
+.contact-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; margin-bottom:4rem; }
+.info-card { padding:2rem; background:var(--white); border:2px solid var(--black); text-align:center; transition:all 0.3s ease; }
+.info-card:hover { transform:translateY(-5px); background:var(--black); color:var(--white); }
+.info-icon { font-size:2rem; margin-bottom:1rem; }
+.info-card h4 { font-size:0.9rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:0.5rem; }
+.info-card a { color:inherit; text-decoration:none; }
+.contact-form { background:var(--white); padding:3rem; border:2px solid var(--black); }
+.form-group { margin-bottom:2rem; }
+.form-group label { display:block; margin-bottom:0.5rem; font-weight:bold; letter-spacing:1px; text-transform:uppercase; font-size:0.9rem; }
+.form-group input, .form-group textarea { width:100%; padding:1rem; border:2px solid var(--black); background:var(--light-gray); font-family:inherit; font-size:1rem; transition:all 0.3s ease; }
+.form-group input:focus, .form-group textarea:focus { outline:none; background:var(--white); transform:translateY(-2px); }
+.submit-btn { width:100%; padding:1.5rem; background:var(--black); color:var(--white); border:2px solid var(--black); font-size:1rem; font-weight:bold; letter-spacing:2px; cursor:pointer; transition:all 0.3s ease; text-transform:uppercase; font-family:inherit; }
+.submit-btn:hover { background:var(--white); color:var(--black); }
+
+/* ── Chatbot ── */
+.chatbot-container { position:fixed; bottom:30px; right:30px; z-index:1000; }
+.chat-button { width:60px; height:60px; background:var(--black); color:var(--white); border-radius:50%; border:none; font-size:1.5rem; cursor:pointer; transition:all 0.3s ease; box-shadow:0 5px 20px rgba(0,0,0,0.3); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);box-shadow:0 5px 20px rgba(0,0,0,0.3);} 50%{transform:scale(1.1);box-shadow:0 8px 30px rgba(0,0,0,0.4);} }
+.chat-button:hover { transform:scale(1.15); }
+.chat-window { position:absolute; bottom:80px; right:0; width:380px; height:550px; background:var(--white); border:2px solid var(--black); display:none; flex-direction:column; box-shadow:0 10px 40px rgba(0,0,0,0.2); animation:slideUp 0.3s ease; }
+.chat-window.active { display:flex; }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+.chat-header { background:var(--black); color:var(--white); padding:1.5rem; font-weight:bold; display:flex; justify-content:space-between; align-items:center; letter-spacing:2px; }
+.chat-close { background:none; border:none; color:var(--white); font-size:1.5rem; cursor:pointer; transition:transform 0.3s ease; }
+.chat-close:hover { transform:rotate(90deg); }
+.chat-messages { flex:1; padding:1.5rem; overflow-y:auto; display:flex; flex-direction:column; gap:1rem; background:var(--light-gray); }
+.message { padding:1rem 1.2rem; max-width:80%; animation:messageAppear 0.3s ease; line-height:1.5; }
+@keyframes messageAppear { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+.bot-message { background:var(--white); border:2px solid var(--black); align-self:flex-start; }
+.user-message { background:var(--black); color:var(--white); align-self:flex-end; }
+.chat-input-container { padding:1.5rem; border-top:2px solid var(--black); display:flex; gap:0.8rem; background:var(--white); }
+.chat-input { flex:1; padding:0.8rem; border:2px solid var(--black); font-family:inherit; background:var(--light-gray); }
+.chat-input:focus { outline:none; background:var(--white); }
+.chat-send { padding:0.8rem 1.5rem; background:var(--black); color:var(--white); border:none; cursor:pointer; font-weight:bold; letter-spacing:1px; transition:all 0.3s ease; font-family:inherit; }
+.chat-send:hover { background:var(--white); color:var(--black); border:2px solid var(--black); }
+
+/* ── Footer ── */
+footer { background:var(--black); color:var(--white); text-align:center; padding:4rem 2rem; }
+.footer-content { max-width:1200px; margin:0 auto; }
+.footer-links { display:flex; justify-content:center; gap:3rem; margin:2rem 0; }
+.footer-links a { color:var(--white); text-decoration:none; font-size:1.1rem; transition:all 0.3s ease; }
+.footer-links a:hover { transform:translateY(-3px); opacity:0.7; }
+
+/* ── CERTIFICATES SECTION ── */
+.certificates-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:2rem; margin-top:1rem; }
+
+.no-certs-msg { grid-column:1/-1; text-align:center; padding:4rem 2rem; color:var(--medium-gray); border:2px dashed rgba(0,0,0,0.15); font-size:0.95rem; letter-spacing:2px; text-transform:uppercase; }
+
+.cert-card { background:var(--white); border:2px solid var(--black); overflow:hidden; cursor:pointer; transition:all 0.35s ease; position:relative; }
+.cert-card:hover { transform:translateY(-8px); box-shadow:0 16px 40px rgba(0,0,0,0.15); }
+.cert-card-img { width:100%; height:170px; object-fit:cover; display:block; border-bottom:2px solid var(--black); }
+.cert-card-pdf-thumb { width:100%; height:170px; background:var(--black); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; border-bottom:2px solid var(--black); }
+.cert-card-pdf-thumb span:first-child { font-size:2.8rem; }
+.cert-card-pdf-thumb span:last-child { color:rgba(255,255,255,0.5); font-size:0.7rem; letter-spacing:3px; text-transform:uppercase; }
+.cert-card-body { padding:1.4rem 1.6rem; }
+.cert-card-body h4 { font-size:0.9rem; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:0.4rem; color:var(--black); line-height:1.4; }
+.cert-card-body p { font-size:0.78rem; color:var(--medium-gray); letter-spacing:1px; text-transform:uppercase; }
+.cert-card-overlay { position:absolute; inset:0; background:rgba(4,4,4,0.75); display:flex; align-items:center; justify-content:center; font-size:0.75rem; letter-spacing:4px; text-transform:uppercase; color:var(--white); opacity:0; transition:opacity 0.3s ease; font-weight:bold; }
+.cert-card:hover .cert-card-overlay { opacity:1; }
+
+.admin-toggle-btn { background:transparent; border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.25); padding:0.5rem 1.1rem; font-size:0.7rem; letter-spacing:2px; cursor:pointer; font-family:inherit; transition:all 0.3s ease; border-radius:2px; text-transform:uppercase; }
+.admin-toggle-btn:hover { border-color:rgba(0,0,0,0.35); color:rgba(0,0,0,0.6); }
+
+.admin-panel { display:none; max-width:580px; margin:2rem auto 0; background:var(--white); border:2px solid var(--black); padding:2.5rem; }
+.admin-panel.open { display:block; }
+.admin-login h3, .admin-upload h3 { font-size:0.9rem; letter-spacing:4px; text-transform:uppercase; margin-bottom:2rem; color:var(--black); }
+.admin-error { display:none; color:#cc2200; font-size:0.85rem; letter-spacing:1px; margin-top:1rem; }
+.admin-upload { display:none; }
+
+.file-input { width:100%; padding:1rem; border:2px solid var(--black); background:var(--light-gray); font-family:inherit; font-size:0.85rem; cursor:pointer; color:var(--black); }
+.file-input::file-selector-button { background:var(--black); border:none; color:var(--white); padding:0.5rem 1rem; margin-right:1rem; cursor:pointer; font-family:inherit; font-size:0.8rem; letter-spacing:1px; text-transform:uppercase; }
+
+.upload-msg { display:none; font-size:0.85rem; letter-spacing:1px; margin-top:1rem; }
+.admin-divider { border:none; border-top:1px solid rgba(0,0,0,0.1); margin:2.5rem 0; }
+
+.admin-cert-item { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.2rem; border:1px solid rgba(0,0,0,0.1); margin-bottom:0.75rem; background:var(--light-gray); }
+.admin-cert-item span { font-size:0.82rem; letter-spacing:1px; color:var(--black); flex:1; }
+.admin-cert-item button { background:transparent; border:1px solid #cc2200; color:#cc2200; padding:0.4rem 0.9rem; font-size:0.72rem; cursor:pointer; font-family:inherit; letter-spacing:1px; text-transform:uppercase; transition:all 0.2s ease; white-space:nowrap; }
+.admin-cert-item button:hover { background:#cc2200; color:var(--white); }
+
+.admin-logout-btn { margin-top:2rem; background:transparent; border:1px solid rgba(0,0,0,0.2); color:var(--medium-gray); padding:0.7rem 1.5rem; cursor:pointer; font-family:inherit; font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; transition:all 0.2s ease; display:block; }
+.admin-logout-btn:hover { border-color:var(--black); color:var(--black); }
+
+/* Lightbox */
+.cert-lightbox { display:none; position:fixed; inset:0; background:rgba(4,4,4,0.93); z-index:9000; align-items:center; justify-content:center; padding:2rem; }
+.cert-lightbox.open { display:flex; }
+.lightbox-content { position:relative; max-width:860px; width:100%; text-align:center; }
+.lightbox-close { position:absolute; top:-3rem; right:0; background:none; border:none; color:var(--white); font-size:2.2rem; cursor:pointer; opacity:0.7; transition:opacity 0.2s; line-height:1; }
+.lightbox-close:hover { opacity:1; }
+#lightboxImg { max-width:100%; max-height:75vh; object-fit:contain; display:none; border:2px solid rgba(255,255,255,0.1); }
+#lightboxPdf { width:100%; height:75vh; display:none; border:2px solid rgba(255,255,255,0.1); }
+#lightboxTitle { color:var(--white); margin-top:1.2rem; font-size:1rem; letter-spacing:3px; text-transform:uppercase; font-family:inherit; }
+#lightboxIssuer { color:rgba(255,255,255,0.45); font-size:0.8rem; letter-spacing:2px; text-transform:uppercase; margin-top:0.4rem; }
+
+/* ── Responsive ── */
+@media (max-width:968px) {
+    .hero h1 { font-size:3.5rem; }
+    .section-title { font-size:2.5rem; }
+    .timeline::before { left:0; }
+    .timeline-content { width:100%; margin-left:2rem !important; }
+    .timeline-item:nth-child(even) .timeline-content::before { left:-60px; }
+    nav ul { display:none; position:absolute; top:100%; left:0; width:100%; background:var(--white); flex-direction:column; padding:2rem; border-top:1px solid rgba(0,0,0,0.1); gap:1rem; }
+    nav ul.active { display:flex; }
+    .menu-toggle { display:flex; }
+    .hero-buttons { flex-direction:column; align-items:center; }
+    .chat-window { width:90vw; right:5vw; }
+    .certificates-grid { grid-template-columns:1fr 1fr; }
+}
+@media (max-width:576px) {
+    .hero h1 { font-size:2.5rem; }
+    .hero .subtitle { font-size:1.2rem; }
+    section { padding:5rem 5%; }
+    .btn { padding:1rem 2rem; }
+    .stat-number { font-size:3rem; }
+    .section-title { font-size:2rem; }
+    .certificates-grid { grid-template-columns:1fr; }
+    .admin-panel { padding:1.5rem; }
+    .cert-lightbox { padding:1rem; }
+    .lightbox-close { top:-2.5rem; }
+}
+    </style>
 </head>
 <body>
+
     <!-- Page Loader -->
     <div class="page-loader">
         <div class="loader-content">
@@ -21,170 +340,94 @@
     <!-- Navigation -->
     <nav>
         <div class="logo">NAVRAJ KUMAR YADAV</div>
-         <ul id="navMenu">
+        <ul id="navMenu">
             <li><a href="#home">HOME</a></li>
             <li><a href="#about">ABOUT</a></li>
             <li><a href="#skills">SKILLS</a></li>
             <li><a href="#experience">EXPERIENCE</a></li>
             <li><a href="#projects">PROJECTS</a></li>
+            <li><a href="#certificates">CERTIFICATES</a></li>
             <li><a href="#contact">CONTACT</a></li>
             <li><a href="Navraj_PCCOE.pdf" target="_blank">RESUME</a></li>
         </ul>
         <div class="menu-toggle" id="menuToggle">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span></span><span></span><span></span>
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero" id="home">
         <div class="hero-grid"></div>
         <div class="floating-shape shape1"></div>
         <div class="floating-shape shape2"></div>
         <div class="floating-shape shape3"></div>
         <div class="floating-shape shape4"></div>
-        
         <div class="hero-content">
             <p class="hero-label">COMPUTER ENGINEER • INNOVATOR • LEADER</p>
             <h1>NAVRAJ KUMAR YADAV</h1>
             <p class="subtitle">Building Tomorrow's Digital Solutions</p>
-            <p class="description">
-                Results-driven Computer Engineering student with expertise in full-stack development and data analytics. 
-                President of International Students Club, leading 50+ members and executing high-impact events for 300+ attendees.
-            </p>
+            <p class="description">Results-driven Computer Engineering student with expertise in full-stack development and data analytics. President of International Students Club, leading 50+ members and executing high-impact events for 300+ attendees.</p>
             <div class="hero-buttons">
                 <a href="#contact" class="btn btn-primary"><span>GET IN TOUCH</span></a>
                 <a href="#projects" class="btn btn-secondary"><span>VIEW PROJECTS</span></a>
             </div>
         </div>
-        
-        <div class="scroll-indicator">
-            <span></span>
-        </div>
+        <div class="scroll-indicator"><span></span></div>
     </section>
 
-    <!-- About Section -->
+    <!-- About -->
     <section id="about">
         <div class="container">
             <div class="section-header">
                 <p class="section-label">WHO I AM</p>
                 <h2 class="section-title">ABOUT ME</h2>
-                <p class="section-description">
-                    Passionate about leveraging technology to build scalable solutions and drive innovation in collaborative environments.
-                </p>
+                <p class="section-description">Passionate about leveraging technology to build scalable solutions and drive innovation in collaborative environments.</p>
             </div>
             <div class="about-content">
-                <p style="font-size: 1.2rem; line-height: 2; max-width: 800px; margin: 0 auto;">
-                    I am a Computer Engineering student at Pimpri Chinchwad College of Engineering, specializing in 
-                    full-stack development, data analytics, and leadership. As President of the International Students Club, 
-                    I manage a 50+ member team and orchestrate high-impact events. I'm proficient in Python, C, JavaScript, 
-                    React.js, Node.js, and modern web technologies. I've completed industry simulations with Deloitte Australia 
-                    and Forage Academy, showcasing strong analytical thinking and technical problem-solving skills.
+                <p style="font-size:1.2rem;line-height:2;max-width:800px;margin:0 auto;">
+                    I am a Computer Engineering student at Pimpri Chinchwad College of Engineering, specializing in full-stack development, data analytics, and leadership. As President of the International Students Club, I manage a 50+ member team and orchestrate high-impact events. I'm proficient in Python, C, JavaScript, React.js, Node.js, and modern web technologies. I've completed industry simulations with Deloitte Australia and Forage Academy, showcasing strong analytical thinking and technical problem-solving skills.
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- Stats Section -->
+    <!-- Stats -->
     <section class="stats-section">
         <div class="container">
             <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-number" data-target="50">0</span>
-                    <span class="stat-label">Team Members Led</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" data-target="300">0</span>
-                    <span class="stat-label">Event Attendees</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" data-target="150">0</span>
-                    <span class="stat-label">% Engagement Increase</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" data-target="10">0</span>
-                    <span class="stat-label">Projects Completed</span>
-                </div>
+                <div class="stat-item"><span class="stat-number" data-target="50">0</span><span class="stat-label">Team Members Led</span></div>
+                <div class="stat-item"><span class="stat-number" data-target="300">0</span><span class="stat-label">Event Attendees</span></div>
+                <div class="stat-item"><span class="stat-number" data-target="150">0</span><span class="stat-label">% Engagement Increase</span></div>
+                <div class="stat-item"><span class="stat-number" data-target="10">0</span><span class="stat-label">Projects Completed</span></div>
             </div>
         </div>
     </section>
 
-    <!-- Skills Section -->
+    <!-- Skills -->
     <section id="skills">
         <div class="container">
             <div class="section-header">
                 <p class="section-label">WHAT I DO</p>
                 <h2 class="section-title">TECHNICAL SKILLS</h2>
-                <p class="section-description">
-                    Comprehensive expertise across multiple domains of software development and engineering.
-                </p>
+                <p class="section-description">Comprehensive expertise across multiple domains of software development and engineering.</p>
             </div>
             <div class="skills-grid">
-                <div class="skill-card">
-                    <h3>PROGRAMMING LANGUAGES</h3>
-                    <ul>
-                        <li>Python</li>
-                        <li>C</li>
-                        <li>JavaScript</li>
-                        <li>SAP ABAP</li>
-                        <li>HTML5 & CSS3</li>
-                        <li>SQL</li>
-                    </ul>
-                </div>
-                <div class="skill-card">
-                    <h3>WEB TECHNOLOGIES</h3>
-                    <ul>
-                        <li>React.js</li>
-                        <li>Node.js</li>
-                        <li>RESTful APIs</li>
-                        <li>Full-Stack Development</li>
-                        <li>Responsive Design</li>
-                    </ul>
-                </div>
-                <div class="skill-card">
-                    <h3>TOOLS & PLATFORMS</h3>
-                    <ul>
-                        <li>Git/GitHub</li>
-                        <li>Adobe Photoshop</li>
-                        <li>SQL Databases</li>
-                        <li>Data Visualization Tools</li>
-                        <li>Agile Methodologies</li>
-                    </ul>
-                </div>
-                <div class="skill-card">
-                    <h3>CORE COMPETENCIES</h3>
-                    <ul>
-                        <li>Data Structures & Algorithms</li>
-                        <li>System Design</li>
-                        <li>Data Analytics</li>
-                        <li>Machine Learning Concepts</li>
-                        <li>Project Management</li>
-                    </ul>
-                </div>
-                <div class="skill-card">
-                    <h3>SOFT SKILLS</h3>
-                    <ul>
-                        <li>Leadership</li>
-                        <li>Cross-functional Collaboration</li>
-                        <li>Strategic Planning</li>
-                        <li>Public Speaking</li>
-                        <li>Team Building</li>
-                    </ul>
-                </div>
+                <div class="skill-card"><h3>PROGRAMMING LANGUAGES</h3><ul><li>Python</li><li>C</li><li>JavaScript</li><li>SAP ABAP</li><li>HTML5 & CSS3</li><li>SQL</li></ul></div>
+                <div class="skill-card"><h3>WEB TECHNOLOGIES</h3><ul><li>React.js</li><li>Node.js</li><li>RESTful APIs</li><li>Full-Stack Development</li><li>Responsive Design</li></ul></div>
+                <div class="skill-card"><h3>TOOLS & PLATFORMS</h3><ul><li>Git/GitHub</li><li>Adobe Photoshop</li><li>SQL Databases</li><li>Data Visualization Tools</li><li>Agile Methodologies</li></ul></div>
+                <div class="skill-card"><h3>CORE COMPETENCIES</h3><ul><li>Data Structures & Algorithms</li><li>System Design</li><li>Data Analytics</li><li>Machine Learning Concepts</li><li>Project Management</li></ul></div>
+                <div class="skill-card"><h3>SOFT SKILLS</h3><ul><li>Leadership</li><li>Cross-functional Collaboration</li><li>Strategic Planning</li><li>Public Speaking</li><li>Team Building</li></ul></div>
             </div>
         </div>
     </section>
 
-    <!-- Experience Section -->
+    <!-- Experience -->
     <section id="experience">
         <div class="container">
             <div class="section-header">
                 <p class="section-label">MY JOURNEY</p>
                 <h2 class="section-title">EXPERIENCE</h2>
-                <p class="section-description">
-                    Leadership roles and professional development that shaped my technical expertise.
-                </p>
+                <p class="section-description">Leadership roles and professional development that shaped my technical expertise.</p>
             </div>
             <div class="timeline">
                 <div class="timeline-item">
@@ -224,8 +467,6 @@
                         </ul>
                     </div>
                 </div>
-
-
                 <div class="timeline-item">
                     <div class="timeline-content">
                         <div class="timeline-date">2024 - 2025</div>
@@ -240,22 +481,17 @@
                         </ul>
                     </div>
                 </div>
-
-
-                
             </div>
         </div>
     </section>
 
-    <!-- Projects Section -->
+    <!-- Projects -->
     <section id="projects">
         <div class="container">
             <div class="section-header">
                 <p class="section-label">MY WORK</p>
                 <h2 class="section-title">TECHNICAL PROJECTS</h2>
-                <p class="section-description">
-                    Innovative solutions showcasing full-stack development and problem-solving capabilities.
-                </p>
+                <p class="section-description">Innovative solutions showcasing full-stack development and problem-solving capabilities.</p>
             </div>
             <div class="projects-grid">
                 <div class="project-card">
@@ -296,15 +532,77 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
+    <!-- Certificates -->
+    <section id="certificates">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">ACHIEVEMENTS</p>
+                <h2 class="section-title">CERTIFICATES</h2>
+                <p class="section-description">Professional certifications and achievements that validate my expertise.</p>
+            </div>
+            <div class="certificates-grid" id="certificatesGrid">
+                <div class="no-certs-msg" id="noCertsMsg">No certificates uploaded yet. Check back soon!</div>
+            </div>
+            <div style="text-align:center;margin-top:3rem;">
+                <button class="admin-toggle-btn" id="adminToggle">🔐 ADMIN</button>
+            </div>
+            <div class="admin-panel" id="adminPanel">
+                <div class="admin-login" id="adminLogin">
+                    <h3>ADMIN ACCESS</h3>
+                    <div class="form-group">
+                        <label>PASSWORD</label>
+                        <input type="password" id="adminPassword" placeholder="Enter admin password" />
+                    </div>
+                    <button class="submit-btn" id="adminLoginBtn">LOGIN</button>
+                    <p id="loginError" class="admin-error">Incorrect password. Try again.</p>
+                </div>
+                <div class="admin-upload" id="adminUpload">
+                    <h3>UPLOAD CERTIFICATE</h3>
+                    <div class="form-group">
+                        <label>CERTIFICATE TITLE</label>
+                        <input type="text" id="certTitle" placeholder="e.g. Deloitte Data Analytics Simulation" />
+                    </div>
+                    <div class="form-group">
+                        <label>ISSUING ORGANIZATION</label>
+                        <input type="text" id="certIssuer" placeholder="e.g. Deloitte Australia" />
+                    </div>
+                    <div class="form-group">
+                        <label>DATE ISSUED</label>
+                        <input type="month" id="certDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>CERTIFICATE FILE (JPG, PNG, PDF)</label>
+                        <input type="file" id="certFile" accept="image/*,.pdf" class="file-input" />
+                    </div>
+                    <button class="submit-btn" id="uploadCertBtn">UPLOAD CERTIFICATE</button>
+                    <p id="uploadMsg" class="upload-msg"></p>
+                    <div class="admin-divider"></div>
+                    <h3>MANAGE CERTIFICATES</h3>
+                    <div id="adminCertsList"></div>
+                    <button class="admin-logout-btn" id="adminLogoutBtn">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificate Lightbox -->
+    <div class="cert-lightbox" id="certLightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightboxClose">×</button>
+            <img id="lightboxImg" src="" alt="" />
+            <iframe id="lightboxPdf" src=""></iframe>
+            <h3 id="lightboxTitle"></h3>
+            <p id="lightboxIssuer"></p>
+        </div>
+    </div>
+
+    <!-- Contact -->
     <section id="contact">
         <div class="container">
             <div class="section-header">
                 <p class="section-label">LET'S CONNECT</p>
                 <h2 class="section-title">GET IN TOUCH</h2>
-                <p class="section-description">
-                    I'm always open to discussing new projects, creative ideas, or opportunities to collaborate.
-                </p>
+                <p class="section-description">I'm always open to discussing new projects, creative ideas, or opportunities to collaborate.</p>
             </div>
             <div class="contact-container">
                 <div class="contact-info">
@@ -326,18 +624,9 @@
                 </div>
                 <div class="contact-form">
                     <form id="contactForm">
-                        <div class="form-group">
-                            <label>NAME</label>
-                            <input type="text" id="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>EMAIL</label>
-                            <input type="email" id="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label>MESSAGE</label>
-                            <textarea id="message" rows="6" required></textarea>
-                        </div>
+                        <div class="form-group"><label>NAME</label><input type="text" id="name" required></div>
+                        <div class="form-group"><label>EMAIL</label><input type="email" id="email" required></div>
+                        <div class="form-group"><label>MESSAGE</label><textarea id="message" rows="6" required></textarea></div>
                         <button type="submit" class="submit-btn">SEND MESSAGE</button>
                     </form>
                 </div>
@@ -348,15 +637,15 @@
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <h3 style="font-size: 2rem; margin-bottom: 1rem;">NAVRAJ KUMAR YADAV</h3>
-            <p style="margin-bottom: 2rem; opacity: 0.8;">Computer Engineer • Full-Stack Developer • Leader</p>
+            <h3 style="font-size:2rem;margin-bottom:1rem;">NAVRAJ KUMAR YADAV</h3>
+            <p style="margin-bottom:2rem;opacity:0.8;">Computer Engineer • Full-Stack Developer • Leader</p>
             <div class="footer-links">
                 <a href="mailto:navrajkumaryadav2075@gmail.com">Email</a>
                 <a href="https://linkedin.com/in/navraj-kumar-yadav-960600236" target="_blank">LinkedIn</a>
                 <a href="tel:+919049747934">Phone</a>
             </div>
-            <p style="margin-top: 2rem; opacity: 0.6;">© 2026 Navraj Kumar Yadav. All rights reserved.</p>
-            <p style="opacity: 0.6;">Pune, Maharashtra, India</p>
+            <p style="margin-top:2rem;opacity:0.6;">© 2026 Navraj Kumar Yadav. All rights reserved.</p>
+            <p style="opacity:0.6;">Pune, Maharashtra, India</p>
         </div>
     </footer>
 
@@ -378,6 +667,328 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+// ── Page Loader ──
+window.addEventListener('load', () => {
+    setTimeout(() => document.querySelector('.page-loader').classList.add('hidden'), 1500);
+    console.log(`%cPage loaded in ${Math.round(performance.now())}ms`, 'color:#00ff00;font-weight:bold;');
+});
+
+// ── Custom Cursor ──
+const cursor = document.querySelector('.cursor');
+const cursorFollower = document.querySelector('.cursor-follower');
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+    setTimeout(() => { cursorFollower.style.left = e.clientX + 'px'; cursorFollower.style.top = e.clientY + 'px'; }, 100);
+});
+document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.width='40px'; cursor.style.height='40px'; cursor.style.background='rgba(0,0,0,0.2)'; });
+    el.addEventListener('mouseleave', () => { cursor.style.width='20px'; cursor.style.height='20px'; cursor.style.background='transparent'; });
+});
+
+// ── Mobile Menu ──
+const menuToggle = document.getElementById('menuToggle');
+const navMenu    = document.getElementById('navMenu');
+menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+document.querySelectorAll('nav a').forEach(link => link.addEventListener('click', () => navMenu.classList.remove('active')));
+
+// ── Smooth Scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+});
+
+// ── Scroll Animations ──
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
+}, { threshold:0.2, rootMargin:'0px 0px -50px 0px' });
+document.querySelectorAll('.skill-card, .timeline-item, .project-card, .stat-item').forEach(el => observer.observe(el));
+
+// ── Counter Animation ──
+function animateCounter(element) {
+    const target = parseInt(element.getAttribute('data-target'));
+    const step = target / (2000 / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+            element.textContent = target + (element.parentElement.querySelector('.stat-label').textContent.includes('%') ? '' : '+');
+            clearInterval(timer);
+        } else { element.textContent = Math.floor(current); }
+    }, 16);
+}
+const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            document.querySelectorAll('.stat-number').forEach(stat => animateCounter(stat));
+            statsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold:0.5 });
+const statsSection = document.querySelector('.stats-section');
+if (statsSection) statsObserver.observe(statsSection);
+
+// ── Parallax ──
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    document.querySelectorAll('.floating-shape').forEach((shape, i) => {
+        shape.style.transform = `translateY(${scrolled * (i+1) * 0.3}px) rotate(${scrolled * 0.05}deg)`;
+    });
+});
+
+// ── Active Nav ──
+const sections = document.querySelectorAll('section');
+const navLinks  = document.querySelectorAll('nav a');
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (pageYOffset >= s.offsetTop - 200) current = s.getAttribute('id'); });
+    navLinks.forEach(link => {
+        link.style.fontWeight = link.getAttribute('href') === `#${current}` ? 'bold' : '500';
+    });
+});
+
+// ── Contact Form ──
+document.getElementById('contactForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert(`Thank you ${document.getElementById('name').value}!\n\nYour message has been sent successfully.\nI'll respond to ${document.getElementById('email').value} soon!`);
+    e.target.reset();
+});
+document.querySelectorAll('.form-group input, .form-group textarea').forEach(input => {
+    input.addEventListener('focus', () => { input.parentElement.style.transform='scale(1.02)'; input.parentElement.style.transition='transform 0.3s ease'; });
+    input.addEventListener('blur',  () => { input.parentElement.style.transform='scale(1)'; });
+});
+
+// ── Chatbot ──
+const chatToggle   = document.getElementById('chatToggle');
+const chatWindow   = document.getElementById('chatWindow');
+const chatClose    = document.getElementById('chatClose');
+const chatSend     = document.getElementById('chatSend');
+const chatInput    = document.getElementById('chatInput');
+const chatMessages = document.getElementById('chatMessages');
+
+const greetings = [
+    "Hi! 👋 I'm Navraj's AI assistant. How can I help you today?",
+    "Hello! Welcome to Navraj's portfolio. What would you like to know?",
+    "Hey there! I'm here to answer your questions about Navraj.",
+    "Greetings! Ask me anything about Navraj's skills and experience!"
+];
+
+chatToggle.addEventListener('click', () => {
+    chatWindow.classList.add('active');
+    if (chatMessages.children.length === 1) chatMessages.children[0].textContent = greetings[Math.floor(Math.random() * greetings.length)];
+});
+chatClose.addEventListener('click', () => chatWindow.classList.remove('active'));
+
+function addMessage(text, isUser = false) {
+    const d = document.createElement('div');
+    d.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    d.textContent = text;
+    chatMessages.appendChild(d);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function getBotResponse(msg) {
+    const m = msg.toLowerCase();
+    if (m.includes('hello')||m.includes('hi')||m.includes('hey')) return "Hello! I'm here to help you learn more about Navraj. What would you like to know?";
+    if (m.includes('skill')||m.includes('technology')||m.includes('programming')) return "Navraj is proficient in Python, C, JavaScript, React.js, Node.js, SAP ABAP, SQL, and modern web technologies. He also has expertise in Data Structures, Algorithms, and Data Analytics!";
+    if (m.includes('experience')||m.includes('work')||m.includes('job')) return "Navraj is President of the International Students Club, leading 50+ members. He's completed simulations with Deloitte Australia (Data Analytics) and Forage Academy (Data Labeling).";
+    if (m.includes('education')||m.includes('college')||m.includes('study')) return "Navraj is pursuing B.Tech in Computer Engineering at Pimpri Chinchwad College of Engineering, expected graduation in 2026.";
+    if (m.includes('project')) return "Navraj has worked on a Dynamic Web Application Platform using React.js & Node.js, Algorithm Optimization projects, and Collaborative Software Development using Git and agile!";
+    if (m.includes('leadership')||m.includes('president')||m.includes('club')) return "As President of the International Students Club, Navraj manages a $10K+ budget, orchestrates events for 300+ attendees, and achieved 150% increase in social media engagement!";
+    if (m.includes('contact')||m.includes('email')||m.includes('phone')||m.includes('reach')) return "You can reach Navraj at:\n📧 navrajkumaryadav2075@gmail.com\n📱 +91 9049747934\n💼 LinkedIn: linkedin.com/in/navraj-kumar-yadav-960600236";
+    if (m.includes('location')||m.includes('where')) return "Navraj is based in Pune, Maharashtra, India.";
+    if (m.includes('linkedin')) return "Connect on LinkedIn: linkedin.com/in/navraj-kumar-yadav-960600236";
+    if (m.includes('certif')) return "Navraj has certifications from Deloitte Australia and Forage Academy. Check the Certificates section to view them!";
+    if (m.includes('thank')) return "You're welcome! Feel free to ask anything else about Navraj!";
+    return "I can help with info about Navraj's skills, experience, education, projects, leadership, or contact details. What would you like to know?";
+}
+
+function sendMessage() {
+    const msg = chatInput.value.trim();
+    if (msg) { addMessage(msg, true); chatInput.value = ''; setTimeout(() => addMessage(getBotResponse(msg)), 800); }
+}
+chatSend.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+// ── Particle Effect ──
+document.addEventListener('mousemove', (e) => {
+    if (Math.random() > 0.97) {
+        const p = document.createElement('div');
+        Object.assign(p.style, { position:'fixed', left:e.clientX+'px', top:e.clientY+'px', width:'3px', height:'3px', background:'#000', borderRadius:'50%', pointerEvents:'none', zIndex:'9999', opacity:'0.3', transition:'all 1s ease' });
+        document.body.appendChild(p);
+        setTimeout(() => { p.style.transform='translateY(30px)'; p.style.opacity='0'; }, 10);
+        setTimeout(() => p.remove(), 1000);
+    }
+});
+
+// ── Konami Code Easter Egg ──
+let kc = [];
+const ks = [38,38,40,40,37,39,37,39,66,65];
+document.addEventListener('keydown', (e) => {
+    kc.push(e.keyCode);
+    if (kc.length > 10) kc.shift();
+    if (kc.join(',') === ks.join(',')) {
+        document.body.style.animation = 'rainbow 2s linear';
+        setTimeout(() => { document.body.style.animation=''; alert('🎉 You found the Konami code!\n\nNavraj loves creative developers like you!'); }, 2000);
+        kc = [];
+    }
+});
+const st = document.createElement('style');
+st.textContent = `@keyframes rainbow{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(360deg);}}`;
+document.head.appendChild(st);
+
+// ── Console ──
+console.log('%c👋 Hello Developer!', 'font-size:20px;font-weight:bold;color:#000;');
+console.log('%cWelcome to Navraj\'s Portfolio', 'font-size:14px;color:#000;');
+console.log('%cContact: navrajkumaryadav2075@gmail.com', 'font-size:12px;color:#666;');
+
+// ════════════════════════════════════════════
+// CERTIFICATES — ⚠️ CHANGE PASSWORD BELOW!
+// ════════════════════════════════════════════
+const ADMIN_PASSWORD = 'navraj@admin2025';
+
+function getCerts() {
+    try { return JSON.parse(localStorage.getItem('portfolio_certs') || '[]'); } catch { return []; }
+}
+function saveCerts(certs) { localStorage.setItem('portfolio_certs', JSON.stringify(certs)); }
+function formatCertDate(ym) {
+    if (!ym) return '';
+    const [y, m] = ym.split('-');
+    return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]} ${y}`;
+}
+
+function renderCertificates() {
+    const grid = document.getElementById('certificatesGrid');
+    if (!grid) return;
+    Array.from(grid.children).forEach(c => { if (c.id !== 'noCertsMsg') c.remove(); });
+    const certs = getCerts();
+    const noMsg = document.getElementById('noCertsMsg');
+    if (certs.length === 0) { noMsg.style.display = 'block'; return; }
+    noMsg.style.display = 'none';
+    certs.forEach((cert, i) => {
+        const card = document.createElement('div');
+        card.className = 'cert-card';
+        card.onclick = () => openLightbox(i);
+        const isPdf = cert.fileType === 'application/pdf';
+        const meta = [cert.issuer, formatCertDate(cert.date)].filter(Boolean).join(' · ');
+        card.innerHTML = `
+            ${isPdf ? `<div class="cert-card-pdf-thumb"><span>📄</span><span>PDF</span></div>`
+                     : `<img class="cert-card-img" src="${cert.fileData}" alt="${cert.title}" loading="lazy" />`}
+            <div class="cert-card-body"><h4>${cert.title}</h4><p>${meta}</p></div>
+            <div class="cert-card-overlay">VIEW</div>`;
+        grid.appendChild(card);
+    });
+}
+
+function openLightbox(index) {
+    const cert = getCerts()[index];
+    if (!cert) return;
+    const img = document.getElementById('lightboxImg');
+    const pdf = document.getElementById('lightboxPdf');
+    document.getElementById('lightboxTitle').textContent = cert.title;
+    document.getElementById('lightboxIssuer').textContent = [cert.issuer, formatCertDate(cert.date)].filter(Boolean).join(' · ');
+    if (cert.fileType === 'application/pdf') {
+        img.style.display = 'none'; pdf.style.display = 'block'; pdf.src = cert.fileData;
+    } else {
+        pdf.style.display = 'none'; img.style.display = 'block'; img.src = cert.fileData; img.alt = cert.title;
+    }
+    document.getElementById('certLightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('certLightbox').classList.remove('open');
+    document.getElementById('lightboxPdf').src = '';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('certLightbox').addEventListener('click', function(e) { if (e.target === this) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+document.getElementById('adminToggle').addEventListener('click', () => {
+    const panel = document.getElementById('adminPanel');
+    const isOpen = panel.classList.contains('open');
+    if (!isOpen) {
+        panel.classList.add('open');
+        document.getElementById('adminLogin').style.display = 'block';
+        document.getElementById('adminUpload').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('loginError').style.display = 'none';
+    } else { panel.classList.remove('open'); }
+});
+
+document.getElementById('adminLoginBtn').addEventListener('click', doAdminLogin);
+document.getElementById('adminPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doAdminLogin(); });
+
+function doAdminLogin() {
+    if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
+        document.getElementById('adminLogin').style.display = 'none';
+        document.getElementById('adminUpload').style.display = 'block';
+        renderAdminCertsList();
+    } else { document.getElementById('loginError').style.display = 'block'; }
+}
+
+document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+    document.getElementById('adminUpload').style.display = 'none';
+    document.getElementById('adminLogin').style.display = 'block';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminPanel').classList.remove('open');
+});
+
+document.getElementById('uploadCertBtn').addEventListener('click', () => {
+    const title  = document.getElementById('certTitle').value.trim();
+    const issuer = document.getElementById('certIssuer').value.trim();
+    const date   = document.getElementById('certDate').value;
+    const file   = document.getElementById('certFile').files[0];
+    const msg    = document.getElementById('uploadMsg');
+
+    if (!title || !issuer || !file) {
+        msg.style.display = 'block'; msg.style.color = '#cc2200';
+        msg.textContent = '⚠ Please fill in Title, Issuer, and select a file.'; return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+        msg.style.display = 'block'; msg.style.color = '#cc2200';
+        msg.textContent = '⚠ File is large (>2MB). Consider compressing it first.';
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const certs = getCerts();
+        certs.push({ id:Date.now(), title, issuer, date, fileData:e.target.result, fileType:file.type });
+        saveCerts(certs);
+        ['certTitle','certIssuer','certDate','certFile'].forEach(id => document.getElementById(id).value = '');
+        msg.style.display = 'block'; msg.style.color = '#1a7a1a';
+        msg.textContent = '✅ Certificate uploaded successfully!';
+        setTimeout(() => msg.style.display = 'none', 3000);
+        renderCertificates(); renderAdminCertsList();
+    };
+    reader.onerror = () => { msg.style.display='block'; msg.style.color='#cc2200'; msg.textContent='❌ Failed to read file.'; };
+    reader.readAsDataURL(file);
+});
+
+function renderAdminCertsList() {
+    const list = document.getElementById('adminCertsList');
+    const certs = getCerts();
+    if (certs.length === 0) { list.innerHTML = '<p style="color:#999;font-size:0.82rem;letter-spacing:1px;text-transform:uppercase;">No certificates yet.</p>'; return; }
+    list.innerHTML = certs.map(cert => `
+        <div class="admin-cert-item">
+            <span>${cert.title} — ${cert.issuer}${cert.date ? ' (' + formatCertDate(cert.date) + ')' : ''}</span>
+            <button onclick="deleteCertificate(${cert.id})">DELETE</button>
+        </div>`).join('');
+}
+
+function deleteCertificate(id) {
+    if (!confirm('Delete this certificate? This cannot be undone.')) return;
+    saveCerts(getCerts().filter(c => c.id !== id));
+    renderCertificates(); renderAdminCertsList();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', renderCertificates);
+    </script>
 </body>
 </html>
