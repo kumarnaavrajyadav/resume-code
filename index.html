@@ -9,7 +9,7 @@
 <style>
 :root{
   --bg:#030303;
-  --bg2:#0c507e;
+  --bg2:#0a0a0a;
   --panel:#061520;
   --border:#0affef18;
   --border2:#0affef35;
@@ -73,9 +73,9 @@ nav{position:fixed;top:0;width:100%;z-index:9000;height:64px;display:flex;align-
 @keyframes navslide{from{transform:translateY(-100%);}to{transform:translateY(0);}}
 .nlogo{font-family:var(--ff-h);font-size:.95rem;font-weight:900;color:var(--cyan);text-decoration:none;letter-spacing:0.15em;text-shadow:0 0 16px var(--cyan);display:flex;align-items:center;gap:8px;}
 .nlogo-arrow{color:var(--orange);font-size:.7rem;}
-.nlinks{display:flex;list-style:none;gap:2rem;}
-.nlinks a{font-family:var(--ff-h);font-size:.6rem;letter-spacing:2.5px;text-transform:uppercase;color:#4a9999;text-decoration:none;transition:all .3s;}
-.nlinks a:hover{color:var(--cyan);text-shadow:0 0 10px var(--cyan);}
+.nlinks{display:flex;list-style:none;gap:2rem;position:absolute;left:50%;transform:translateX(-50%);}
+.nlinks a{font-family:var(--ff-h);font-size:.6rem;letter-spacing:2.5px;text-transform:uppercase;color:#4a9999;text-decoration:none;transition:all .3s;display:inline-block;}
+.nlinks a:hover{color:var(--cyan);text-shadow:0 0 10px var(--cyan);font-size:.75rem;letter-spacing:3px;}
 .hbg{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;}
 .hbg span{width:22px;height:1.5px;background:var(--cyan);transition:.3s;}
 
@@ -230,30 +230,437 @@ section{padding:6rem 5%;position:relative;z-index:1;}
 .acard p{font-size:.75rem;color:#7acfcf;line-height:1.7;}
 
 /* PHOTO SECTION */
-#photo{background:var(--bg);padding:4rem 5%;}
-.photo-wrap{display:flex;align-items:center;justify-content:center;gap:5rem;flex-wrap:wrap;}
-.photo-frame{position:relative;flex-shrink:0;}
-.photo-outer{width:220px;height:260px;border:1px solid rgba(10,255,239,0.3);padding:6px;background:var(--panel);position:relative;}
-.photo-outer::before{content:'PROFILE_DATA';position:absolute;top:-22px;left:0;font-family:var(--ff-h);font-size:.45rem;letter-spacing:3px;color:var(--dimb);}
-.photo-outer::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,255,239,0.04),transparent);pointer-events:none;}
-.photo-corner{position:absolute;width:12px;height:12px;border-color:var(--cyan);border-style:solid;opacity:.8;}
-.photo-corner.tl{top:-1px;left:-1px;border-width:2px 0 0 2px;}
-.photo-corner.tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
-.photo-corner.bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
-.photo-corner.br{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
-.photo-img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:brightness(1.05) contrast(1.02);}
-.photo-scan{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(10,255,239,0.04) 50%,transparent 60%);animation:scanPhoto 4s ease-in-out infinite;pointer-events:none;}
-@keyframes scanPhoto{0%,100%{background-position:0 -100%;}50%{background-position:0 200%;}}
-.photo-glow{position:absolute;inset:-2px;box-shadow:0 0 30px rgba(10,255,239,0.1),inset 0 0 20px rgba(10,255,239,0.03);pointer-events:none;}
-.photo-info{max-width:460px;}
-.photo-info .pi-tag{font-family:var(--ff-h);font-size:.5rem;letter-spacing:4px;text-transform:uppercase;color:var(--orange);margin-bottom:.8rem;display:flex;align-items:center;gap:8px;}
-.photo-info .pi-tag::before{content:'//';color:var(--cyan);}
-.photo-info h2{font-family:var(--ff-h);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;color:var(--white);line-height:1.1;margin-bottom:.5rem;}
-.photo-info h2 span{color:var(--cyan);text-shadow:0 0 15px rgba(10,255,239,0.3);}
-.photo-info .pi-role{font-family:var(--ff-r);font-size:.95rem;color:#8ad8d8;letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.5rem;}
-.pi-badges{display:flex;flex-wrap:wrap;gap:.5rem;}
-.pi-badge{padding:.3rem .8rem;border:1px solid var(--dimb);font-family:var(--ff-h);font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);transition:all .3s;}
-.pi-badge:hover{border-color:var(--cyan);color:var(--cyan);}
+/* =============================================
+   PHOTO SECTION — FULL-PAGE HERO COVER
+   Replaces the old #photo section entirely
+   ============================================= */
+
+#photo {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg, #050a0a);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* ── MASSIVE BG NAME — fills entire background ── */
+.photo-bg-name {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.photo-bg-name span {
+  font-family: var(--ff-h, 'Orbitron', sans-serif);
+  font-size: clamp(7rem, 18vw, 22rem);
+  font-weight: 900;
+  line-height: .82;
+  text-transform: uppercase;
+  letter-spacing: -.03em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(10, 255, 239, 0.07);
+  white-space: nowrap;
+  display: block;
+  animation: bgNameDrift 12s ease-in-out infinite alternate;
+}
+
+.photo-bg-name span:nth-child(2) {
+  -webkit-text-stroke: 1px rgba(10, 255, 239, 0.05);
+  animation-delay: -6s;
+}
+
+@keyframes bgNameDrift {
+  from { transform: translateX(-1%); }
+  to   { transform: translateX(1%); }
+}
+
+/* ── GRID LINES background ── */
+#photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(10,255,239,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10,255,239,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  z-index: 0;
+  animation: gridPan 20s linear infinite;
+}
+
+@keyframes gridPan {
+  from { background-position: 0 0; }
+  to   { background-position: 60px 60px; }
+}
+
+/* ── RADIAL spotlight behind photo ── */
+#photo::after {
+  content: '';
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 55vw;
+  height: 100vh;
+  background: radial-gradient(ellipse at 30% 50%,
+    rgba(10,255,239,.10) 0%,
+    rgba(10,255,239,.04) 35%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── MAIN WRAP ── */
+.photo-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+}
+
+/* ════════════════════════════════
+   LEFT — Photo side
+════════════════════════════════ */
+.photo-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 6vh 4vw;
+}
+
+/* ── Outer border box ── */
+.photo-outer {
+  position: relative;
+  width: min(380px, 38vw);
+  height: min(460px, 58vh);
+  border: 1px solid rgba(10,255,239,0.3);
+  padding: 8px;
+  background: var(--panel, #0d1a1a);
+  overflow: hidden;
+  animation: frameDrop 1s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes frameDrop {
+  from { opacity:0; transform: perspective(700px) rotateY(20deg) translateX(-40px); }
+  to   { opacity:1; transform: perspective(700px) rotateY(0deg)  translateX(0); }
+}
+
+.photo-outer::before {
+  content: 'PROFILE_DATA · ID:001';
+  position: absolute;
+  top: 22px; left: 0;
+  font-family: var(--ff-h, monospace);
+  font-size: q.42rem;
+  letter-spacing: 3px;
+  color: rgba(10,255,239,.35);
+  z-index: 10;
+}
+
+/* ── Corner marks ── */
+.photo-corner { position:absolute; width:18px; height:18px; border-color:var(--cyan,#0affe0); border-style:solid; z-index:10; }
+.photo-corner.tl { top:-1px; left:-1px;   border-width:2px 0 0 2px; }
+.photo-corner.tr { top:-1px; right:-1px;  border-width:2px 2px 0 0; }
+.photo-corner.bl { bottom:-1px; left:-1px;  border-width:0 0 2px 2px; }
+.photo-corner.br { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+.photo-corner { animation: cornerPulse 3s ease-in-out infinite; }
+.photo-corner.tr { animation-delay:.75s; }
+.photo-corner.bl { animation-delay:1.5s; }
+.photo-corner.br { animation-delay:2.25s; }
+@keyframes cornerPulse {
+  0%,100% { opacity:.5; }
+  50%     { opacity:1; box-shadow:0 0 10px var(--cyan,#0affe0); }
+}
+
+/* ── Image ── */
+.photo-img {
+  width:100%; height:100%;
+  object-fit:cover; object-position:center top;
+  display:block;
+  filter:brightness(1.05) contrast(1.05) saturate(1.85);
+  transition:filter .6s;
+}
+.photo-frame:hover .photo-img {
+  filter:brightness(1.12) contrast(1.1) saturate(1.15);
+}
+
+/* ── BIG ghost text over image ── */
+.photo-big-label {
+  position:absolute; inset:0; z-index:3;
+  display:flex; align-items:flex-end;
+  padding:12px 10px;
+  pointer-events:none;
+  animation: labelIn 1.4s .5s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes labelIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.photo-big-label span {
+  font-family: var(--ff-h, 'Orbitron', monospace);
+  font-size: 5.5rem;
+  font-weight: 900;
+  line-height: .8;
+  text-transform: uppercase;
+  letter-spacing: -.03em;
+  color: rgba(10,255,239,.09);
+  -webkit-text-stroke: 1px rgba(10,255,239,.3);
+  mix-blend-mode: screen;
+  animation: labelFloat 7s ease-in-out infinite;
+}
+@keyframes labelFloat {
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-5px); }
+}
+
+/* ── SCAN LINE ── */
+.photo-scan {
+  position:absolute; inset:0; z-index:4;
+  pointer-events:none; overflow:hidden;
+}
+.photo-scan::before {
+  content:'';
+  position:absolute; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,transparent,rgba(10,255,239,.95) 30%,#0affe0 50%,rgba(10,255,239,.95) 70%,transparent);
+  box-shadow:0 0 14px 5px rgba(10,255,239,.5),0 0 35px 10px rgba(10,255,239,.2);
+  animation:scanLine 3s cubic-bezier(.4,0,.6,1) infinite;
+}
+@keyframes scanLine {
+  0%   { top:-3px; opacity:0; }
+  5%   { opacity:1; }
+  95%  { opacity:1; }
+  100% { top:100%; opacity:0; }
+}
+.photo-scan::after {
+  content:'';
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(10,255,239,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(10,255,239,.05) 1px,transparent 1px);
+  background-size:22px 22px;
+  animation:gridShimmer 3s ease-in-out infinite;
+}
+@keyframes gridShimmer {
+  0%,100% { opacity:.5; }
+  50%     { opacity:1; }
+}
+
+/* ── Face-detect rect ── */
+.photo-detect {
+  position:absolute; z-index:5;
+  top:15%; left:18%; width:64%; height:50%;
+  border:1px solid rgba(10,255,239,.6);
+  pointer-events:none;
+  animation:detectBlink 3s .4s ease-in-out infinite;
+}
+.photo-detect::before, .photo-detect::after {
+  content:''; position:absolute;
+  width:12px; height:12px;
+  border-color:var(--cyan,#0affe0); border-style:solid;
+}
+.photo-detect::before { top:-1px; left:-1px;  border-width:2px 0 0 2px; }
+.photo-detect::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+@keyframes detectBlink {
+  0%,10%  { opacity:0; transform:scale(1.06); }
+  20%,80% { opacity:1; transform:scale(1); }
+  90%,100%{ opacity:0; transform:scale(.95); }
+}
+
+/* ── STATUS bar ── */
+.photo-status {
+  position:absolute;
+  bottom:-30px; left:0; right:0;
+  font-family: var(--ff-h, monospace);
+  font-size:.4rem; letter-spacing:5px;
+  text-align:center; color:var(--cyan,#0affe0);
+  z-index:6;
+}
+.photo-status[data-a]::after  { content:attr(data-a); animation:statusSwap 3s steps(1) infinite; }
+.photo-status[data-b]::before { content:attr(data-b); animation:statusSwap2 3s steps(1) infinite; }
+@keyframes statusSwap  { 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+@keyframes statusSwap2 { 0%,49%{opacity:0;} 50%,100%{opacity:1;color:var(--orange,#ff6b2b);} }
+
+/* ── Ambient glow around frame ── */
+.photo-glow {
+  position:absolute; inset:-6px;
+  box-shadow:
+    0 0 60px rgba(10,255,239,.14),
+    0 0 120px rgba(10,255,239,.07),
+    inset 0 0 30px rgba(10,255,239,.04);
+  pointer-events:none;
+  animation:glowPulse 5s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100% { box-shadow:0 0 40px rgba(10,255,239,.10),inset 0 0 20px rgba(10,255,239,.03); }
+  50%     { box-shadow:0 0 80px rgba(10,255,239,.25),inset 0 0 40px rgba(10,255,239,.08); }
+}
+
+/* ── Hover tilt ── */
+.photo-frame .photo-outer {
+  transition:transform .5s cubic-bezier(.22,1,.36,1), border-color .3s;
+}
+.photo-frame:hover .photo-outer {
+  transform:perspective(700px) rotateY(-5deg) rotateX(2deg) translateY(-6px);
+  border-color:rgba(10,255,239,.6);
+}
+
+/* ── Vertical scan bar left edge ── */
+.photo-frame::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:2px;
+  background:linear-gradient(to bottom,transparent,rgba(10,255,239,.6) 40%,rgba(10,255,239,.6) 60%,transparent);
+  animation:vBarPulse 4s ease-in-out infinite;
+}
+@keyframes vBarPulse {
+  0%,100%{opacity:.3;} 50%{opacity:1;}
+}
+
+/* ════════════════════════════════
+   RIGHT — Info side
+════════════════════════════════ */
+.photo-info {
+  position:relative;
+  max-width:100%;
+  padding: 8vh 6vw 8vh 4vw;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:100vh;
+}
+
+/* Vertical accent line left of info */
+.photo-info::before {
+  content:'';
+  position:absolute;
+  left:0; top:15%; bottom:15%;
+  width:1px;
+  background:linear-gradient(to bottom,transparent,rgba(10,255,239,.3) 30%,rgba(10,255,239,.3) 70%,transparent);
+}
+
+.photo-info .pi-tag {
+  font-family: var(--ff-h, monospace);
+  font-size:.55rem; letter-spacing:5px; text-transform:uppercase;
+  color:var(--orange,#ff6b2b);
+  margin-bottom:1.2rem;
+  display:flex; align-items:center; gap:10px;
+  animation: fadeUp .8s .3s both;
+}
+.photo-info .pi-tag::before { content:'//'; color:var(--cyan,#0affe0); }
+
+/* HUGE name */
+.photo-info h2 {
+  font-family: var(--ff-h, 'Orbitron', monospace);
+  font-size: clamp(3rem, 7vw, 7rem);
+  font-weight:900;
+  color:var(--white,#fff);
+  line-height:.92;
+  margin-bottom:.6rem;
+  letter-spacing:-.02em;
+  animation: fadeUp .9s .45s both;
+}
+.photo-info h2 span {
+  color:var(--cyan,#0affe0);
+  text-shadow:0 0 40px rgba(10,255,239,.4),0 0 80px rgba(10,255,239,.15);
+  display:block;
+}
+
+.photo-info .pi-role {
+  font-family: var(--ff-r, monospace);
+  font-size:1rem;
+  color:#7ed4d4;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  margin-bottom:2.5rem;
+  animation: fadeUp 1s .6s both;
+}
+
+.pi-badges {
+  display:flex; flex-wrap:wrap; gap:.6rem;
+  animation: fadeUp 1s .75s both;
+}
+.pi-badge {
+  padding:.4rem 1rem;
+  border:1px solid rgba(10,255,239,.2);
+  font-family: var(--ff-h, monospace);
+  font-size:.5rem; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text,#aaa);
+  transition:all .3s;
+  position:relative;
+  overflow:hidden;
+}
+.pi-badge::before {
+  content:'';
+  position:absolute; inset:0;
+  background:rgba(10,255,239,.05);
+  transform:translateX(-100%);
+  transition:transform .3s;
+}
+.pi-badge:hover::before { transform:translateX(0); }
+.pi-badge:hover { border-color:var(--cyan,#0affe0); color:var(--cyan,#0affe0); }
+
+/* Shared fade-up */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── DECORATIVE: huge faded role text behind info ── */
+.photo-info-bg-role {
+  position:absolute;
+  right:-2vw; top:50%;
+  transform:translateY(-50%) rotate(90deg);
+  font-family: var(--ff-h, monospace);
+  font-size:clamp(4rem,10vw,12rem);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:transparent;
+  -webkit-text-stroke:1px rgba(10,255,239,.06);
+  pointer-events:none;
+  white-space:nowrap;
+  z-index:0;
+}
+
+/* ── Responsive ── */
+@media(max-width:860px){
+  .photo-wrap{
+    grid-template-columns:1fr;
+    min-height:auto;
+  }
+  .photo-frame{
+    min-height:60vw;
+    padding:10vh 6vw 6vh;
+  }
+  .photo-outer{
+    width:min(300px,70vw);
+    height:min(370px,55vw);
+  }
+  .photo-info{
+    min-height:auto;
+    padding:4vh 6vw 10vh;
+    text-align:center;
+    align-items:center;
+  }
+  .photo-info::before{display:none;}
+  .photo-info h2{font-size:clamp(2.4rem,10vw,5rem);}
+  .photo-bg-name span{font-size:clamp(5rem,22vw,14rem);}
+}
 
 /* SKILLS */
 #skills{background:var(--bg);}
@@ -466,9 +873,40 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 
 /* ===== CHATBOT — PURPLE THEME ===== */
 .cwrap{position:fixed;bottom:2rem;right:2rem;z-index:8000;}
-.cfab{width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--bot-primary);font-size:1.2rem;cursor:pointer;transition:all .3s;box-shadow:0 0 20px var(--bot-glow);}
-.cfab:hover{background:var(--bot-bg);box-shadow:0 0 35px var(--bot-glow);}
-.cwin{position:absolute;bottom:66px;right:0;width:330px;background:var(--panel);border:1px solid var(--bot-border);box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 30px rgba(168,85,247,0.08);display:none;flex-direction:column;overflow:hidden;animation:slideIn .35s ease;}
+
+.cfab{
+  width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(124,58,237,0.15));
+  border:1.5px solid var(--bot-primary);
+  border-radius:50%;
+  font-size:1.5rem;
+  cursor:pointer;
+  transition:all .3s;
+  box-shadow:0 0 20px var(--bot-glow),0 4px 15px rgba(0,0,0,0.4);
+  color:var(--bot-primary);
+}
+.cfab:hover{
+  background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(124,58,237,0.25));
+  box-shadow:0 0 35px var(--bot-glow),0 6px 20px rgba(0,0,0,0.5);
+  transform:scale(1.08);
+}
+/* Chat bubble icon via SVG mask */
+.cfab::before{
+  content:'';
+  display:block;
+  width:26px;height:26px;
+  background:var(--bot-primary);
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.1 21.1a.75.75 0 00.976.976l3.932-1.338A9.954 9.954 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z'/%3E%3C/svg%3E");
+  mask-repeat:no-repeat;
+  mask-size:contain;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2.1 21.1a.75.75 0 00.976.976l3.932-1.338A9.954 9.954 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat:no-repeat;
+  -webkit-mask-size:contain;
+  filter:drop-shadow(0 0 6px var(--bot-glow));
+}
+
+.cwin{position:absolute;bottom:70px;right:0;width:330px;background:var(--panel);border:1px solid var(--bot-border);box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 30px rgba(168,85,247,0.08);display:none;flex-direction:column;overflow:hidden;animation:slideIn .35s ease;}
 .cwin.open{display:flex;}
 .cwhead{background:linear-gradient(135deg,rgba(168,85,247,0.18),rgba(124,58,237,0.06));padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bot-border);}
 .cwhead h4{font-family:var(--ff-h);font-size:.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--bot-accent);}
@@ -488,7 +926,6 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 .cin::placeholder{color:var(--dimb);}
 .cgo{padding:.55rem .9rem;background:transparent;color:var(--bot-primary);border:1px solid var(--bot-primary);cursor:pointer;font-size:.85rem;font-weight:700;transition:all .2s;}
 .cgo:hover{background:var(--bot-bg);box-shadow:0 0 12px var(--bot-glow);}
-/* Chatbot online dot */
 .bot-dot{width:6px;height:6px;background:var(--bot-primary);border-radius:50%;box-shadow:0 0 8px var(--bot-primary);animation:pulse 1.8s ease infinite;display:inline-block;margin-right:6px;vertical-align:middle;}
 
 /* RESPONSIVE */
@@ -564,44 +1001,6 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
   </div>
 </div>
 
-<!-- HERO -->
-<section class="hero" id="home">
-  <div class="hero-l">
-    <div class="h-badge"><div class="h-badge-dot"></div><div class="h-badge-txt">Available for Opportunities</div></div>
-    <h1>NAVRAJ<br><span class="accent">KUMAR</span><br><span class="accent2">YADAV</span></h1>
-    <p class="h-sub">Computer Engineer · SAP ABAP · Full-Stack<br>Pune, India · Graduating 2026</p>
-    <div class="h-btns">
-      <a href="#projects" class="btn-cy">View Projects</a>
-      <a href="#contact" class="btn-or">Get In Touch</a>
-    </div>
-  </div>
-  <div class="hero-r">
-    <div class="bento b1">
-      <div class="b-lbl">Core Role</div>
-      <div class="b-big cy">Full-Stack + SAP Dev</div>
-      <div class="b-val">Building enterprise solutions &amp; digital products</div>
-    </div>
-    <div class="bento">
-      <div class="b-lbl">Education</div>
-      <div class="b-big">B.Tech CE</div>
-      <div class="b-val">PCCOE Pune · 2026</div>
-    </div>
-    <div class="bento">
-      <div class="b-lbl">Location</div>
-      <div class="b-big">Pune, MH</div>
-      <div class="b-val">Maharashtra, India</div>
-    </div>
-    <div class="bento b4">
-      <div class="b-lbl">Leadership Impact</div>
-      <div class="b-stats">
-        <div class="b-stat"><span>50+</span><small>Members Led</small></div>
-        <div class="b-stat"><span>300+</span><small>Attendees</small></div>
-        <div class="b-stat"><span>10+</span><small>Projects</small></div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- PHOTO SECTION -->
 <section id="photo">
   <div class="ctr">
@@ -645,6 +1044,46 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
     </div>
   </div>
 </section>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-l">
+    <div class="h-badge"><div class="h-badge-dot"></div><div class="h-badge-txt">Available for Opportunities</div></div>
+    <h1>NAVRAJ<br><span class="accent">KUMAR</span><br><span class="accent2">YADAV</span></h1>
+    <p class="h-sub">Computer Engineer · SAP ABAP · Full-Stack<br>Pune, India · Graduating 2026</p>
+    <div class="h-btns">
+      <a href="#projects" class="btn-cy">View Projects</a>
+      <a href="#contact" class="btn-or">Get In Touch</a>
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="bento b1">
+      <div class="b-lbl">Core Role</div>
+      <div class="b-big cy">Full-Stack + SAP Dev</div>
+      <div class="b-val">Building enterprise solutions &amp; digital products</div>
+    </div>
+    <div class="bento">
+      <div class="b-lbl">Education</div>
+      <div class="b-big">B.Tech CE</div>
+      <div class="b-val">PCCOE Pune · 2026</div>
+    </div>
+    <div class="bento">
+      <div class="b-lbl">Location</div>
+      <div class="b-big">Pune, MH</div>
+      <div class="b-val">Maharashtra, India</div>
+    </div>
+    <div class="bento b4">
+      <div class="b-lbl">Leadership Impact</div>
+      <div class="b-stats">
+        <div class="b-stat"><span>50+</span><small>Members Led</small></div>
+        <div class="b-stat"><span>300+</span><small>Attendees</small></div>
+        <div class="b-stat"><span>10+</span><small>Projects</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
 <!-- ABOUT -->
 <section id="about">
