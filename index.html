@@ -937,6 +937,17 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
   .cgrid{grid-template-columns:1fr 1fr;}
   .photo-outer{width:180px;height:215px;}
 }
+
+.nsearch{display:flex;align-items:center;gap:8px;position:relative;}
+.nsearch-icon{background:none;border:none;cursor:pointer;color:#4a9999;display:flex;align-items:center;padding:6px;transition:all .3s;border:1px solid transparent;border-radius:4px;}
+.nsearch-icon:hover{color:var(--cyan);text-shadow:0 0 10px var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(0,200,200,0.15);}
+.nsearch-bar{display:flex;align-items:center;gap:6px;position:absolute;right:32px;top:50%;transform:translateY(-50%);background:rgba(2,10,15,0.95);border:1px solid var(--cyan);border-radius:4px;padding:4px 10px;width:0;overflow:hidden;opacity:0;transition:width .4s ease,opacity .3s ease;pointer-events:none;}
+.nsearch-bar.open{width:220px;opacity:1;pointer-events:all;}
+.nsearch-input{background:none;border:none;outline:none;color:var(--cyan);font-family:var(--ff-h);font-size:.6rem;letter-spacing:2px;width:100%;caret-color:var(--cyan);}
+.nsearch-input::placeholder{color:#4a9999;letter-spacing:1.5px;}
+.nsearch-close{background:none;border:none;cursor:pointer;color:#4a9999;font-size:.6rem;padding:0;line-height:1;transition:color .3s;flex-shrink:0;}
+.nsearch-close:hover{color:var(--cyan);}
+
 </style>
 </head>
 <body>
@@ -965,6 +976,17 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
     <li><a href="#materials">Materials</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <div class="nsearch" id="nsearch">
+    <div class="nsearch-bar" id="nsearch-bar">
+      <input type="text" class="nsearch-input" id="nsearch-input" placeholder="Search Google..." />
+      <button class="nsearch-close" id="nsearch-close">✕</button>
+    </div>
+    <button class="nsearch-icon" id="nsearch-icon">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+  </div>
   <button class="hbg" id="hbg"><span></span><span></span><span></span></button>
 </nav>
 
@@ -1709,6 +1731,39 @@ document.getElementById('cfab').addEventListener('click',()=>{const w=document.g
 document.getElementById('cwx').addEventListener('click',()=>document.getElementById('cwin').classList.remove('open'));
 document.getElementById('cgo').addEventListener('click',()=>{const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';});
 document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';}});
+
+
+
+const searchIcon  = document.getElementById('nsearch-icon');
+const searchBar   = document.getElementById('nsearch-bar');
+const searchInput = document.getElementById('nsearch-input');
+const searchClose = document.getElementById('nsearch-close');
+
+function openSearch() {
+  searchBar.classList.add('open');
+  searchInput.focus();
+}
+
+function closeSearch() {
+  searchBar.classList.remove('open');
+  searchInput.value = '';
+}
+
+function doSearch() {
+  const query = searchInput.value.trim();
+  if (query) {
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
+    closeSearch();
+  }
+}
+
+searchIcon.addEventListener('click', openSearch);
+searchClose.addEventListener('click', closeSearch);
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+  if (e.key === 'Escape') closeSearch();
+});
 
 // Init
 renderCerts();renderMats();
