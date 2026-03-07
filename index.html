@@ -1556,7 +1556,7 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 <script>
 const EJS_SVC='YOUR_SERVICE_ID',EJS_TPL='YOUR_TEMPLATE_ID',EJS_KEY='YOUR_PUBLIC_KEY';
 emailjs.init(EJS_KEY);
-const PASS='navraj@admin2025',CK='nky_c_v4',MK='nky_m_v4';
+const PASS='admin@2026',CK='nky_c_v4',MK='nky_m_v4';
 
 // Cursor
 const cur=document.getElementById('cur'),ring=document.getElementById('curring');
@@ -1734,35 +1734,21 @@ document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Ent
 
 
 
-const searchIcon  = document.getElementById('nsearch-icon');
-const searchBar   = document.getElementById('nsearch-bar');
-const searchInput = document.getElementById('nsearch-input');
-const searchClose = document.getElementById('nsearch-close');
+const searchIcon = document.getElementById('nsearch-icon');
+const searchBar  = document.getElementById('nsearch-bar');
+const searchInput= document.getElementById('nsearch-input');
+const searchClose= document.getElementById('nsearch-close');
 
-function openSearch() {
+searchIcon.addEventListener('click', () => {
   searchBar.classList.add('open');
   searchInput.focus();
-}
-
-function closeSearch() {
+});
+searchClose.addEventListener('click', () => {
   searchBar.classList.remove('open');
   searchInput.value = '';
-}
-
-function doSearch() {
-  const query = searchInput.value.trim();
-  if (query) {
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
-    closeSearch();
-  }
-}
-
-searchIcon.addEventListener('click', openSearch);
-searchClose.addEventListener('click', closeSearch);
-
-searchInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch();
-  if (e.key === 'Escape') closeSearch();
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ searchBar.classList.remove('open'); searchInput.value=''; }
 });
 
 // Init
