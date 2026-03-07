@@ -916,28 +916,14 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 .bot-dot{width:6px;height:6px;background:var(--bot-primary);border-radius:50%;box-shadow:0 0 8px var(--bot-primary);animation:pulse 1.8s ease infinite;display:inline-block;margin-right:6px;vertical-align:middle;}
 
 /* RESPONSIVE */
-/* Add this to your base styles (outside media queries) */
-.hbg { display: none; }
-
 @media(max-width:960px){
   .hero{grid-template-columns:1fr;padding-top:7rem;gap:3rem;}
   .about-wrap,.skills-hero,.clayout,.resume-wrap{grid-template-columns:1fr;gap:2.5rem;}
   .proj-bento{grid-template-columns:1fr;}
   .pc1,.pc3{grid-column:auto;}
-  .nlinks{
-    display:none;
-    flex-direction:column;
-    position:absolute;
-    top:64px;left:0;
-    width:100%;
-    background:var(--bg2);
-    border-bottom:1px solid var(--border);
-    padding:2rem 5%;
-    gap:1.5rem;
-    z-index:999;                     /* ← ensure it layers above content */
-  }
+  .nlinks{display:none;flex-direction:column;position:absolute;top:64px;left:0;width:100%;background:var(--bg2);border-bottom:1px solid var(--border);padding:2rem 5%;gap:1.5rem;}
   .nlinks.open{display:flex;}
-  .hbg{display:flex;}               /* ← shows hamburger on mobile */
+  .hbg{display:flex;}
   .cf2,.f2{grid-template-columns:1fr;}
   .tl-item{grid-template-columns:1fr;gap:.5rem;}
   .tl-item::after{left:6px;}
@@ -961,23 +947,6 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 .nsearch-input::placeholder{color:#4a9999;letter-spacing:1.5px;}
 .nsearch-close{background:none;border:none;cursor:pointer;color:#4a9999;font-size:.6rem;padding:0;line-height:1;transition:color .3s;flex-shrink:0;}
 .nsearch-close:hover{color:var(--cyan);}
-
-
-
-
-/* Hamburger base */
-.hbg span {
-  display:block; width:22px; height:2px;
-  background:var(--fg);
-  transition: transform .3s, opacity .3s;
-}
-
-/* ☰ → ✕ animation */
-.hbg.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.hbg.active span:nth-child(2) { opacity: 0; }
-.hbg.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-
 
 </style>
 </head>
@@ -1587,7 +1556,7 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 <script>
 const EJS_SVC='YOUR_SERVICE_ID',EJS_TPL='YOUR_TEMPLATE_ID',EJS_KEY='YOUR_PUBLIC_KEY';
 emailjs.init(EJS_KEY);
-const PASS='admin@2026',CK='nky_c_v4',MK='nky_m_v4';
+const PASS='admin@2025',CK='nky_c_v4',MK='nky_m_v4';
 
 // Cursor
 const cur=document.getElementById('cur'),ring=document.getElementById('curring');
@@ -1762,33 +1731,6 @@ document.getElementById('cfab').addEventListener('click',()=>{const w=document.g
 document.getElementById('cwx').addEventListener('click',()=>document.getElementById('cwin').classList.remove('open'));
 document.getElementById('cgo').addEventListener('click',()=>{const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';});
 document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';}});
-
-
-
-const hbg    = document.getElementById('hbg');
-const nlinks = document.getElementById('nlinks');
-
-// Toggle menu open/close
-hbg.addEventListener('click', () => {
-  nlinks.classList.toggle('open');
-  hbg.classList.toggle('active');   // optional: animates the ☰ → ✕
-});
-
-// Close menu when any nav link is clicked
-nlinks.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => {
-    nlinks.classList.remove('open');
-    hbg.classList.remove('active');
-  });
-});
-
-// Close menu when clicking outside
-document.addEventListener('click', (e) => {
-  if (!hbg.contains(e.target) && !nlinks.contains(e.target)) {
-    nlinks.classList.remove('open');
-    hbg.classList.remove('active');
-  }
-});
 
 
 
