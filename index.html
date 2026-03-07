@@ -248,6 +248,7 @@ section{padding:6rem 5%;position:relative;z-index:1;}
 .acard p{font-size:0.806rem;color:#d4a855;line-height:1.7;}  /* was #7acfcf */
 
 /* PHOTO SECTION */
+
 #photo {
   position: relative;
   width: 100%;
@@ -328,6 +329,11 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   z-index: 1;
 }
 
+/* ============================================
+   3D SCENE CONTAINER
+   Establishes the perspective space for all
+   3D child transforms
+   ============================================ */
 .photo-wrap {
   position: relative;
   z-index: 2;
@@ -338,8 +344,15 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   align-items: center;
   gap: 0;
   padding: 0;
+  perspective: 1200px;       /* scene-level perspective */
+  perspective-origin: 50% 50%;
 }
 
+/* ============================================
+   PHOTO FRAME — gyroscopic tilt controller
+   JS-free version uses CSS-only idle animation;
+   add data-tilt JS for full pointer tracking
+   ============================================ */
 .photo-frame {
   position: relative;
   display: flex;
@@ -347,8 +360,27 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   justify-content: center;
   min-height: 100vh;
   padding: 6vh 4vw;
+  /* Per-frame perspective so transforms stay local */
+  perspective: 900px;
+  perspective-origin: 50% 50%;
 }
 
+/* ============================================
+   3D IDLE FLOAT — continuous gentle levitation
+   ============================================ */
+@keyframes float3D {
+  0%   { transform: perspective(900px) rotateX(0deg)   rotateY(0deg)   rotateZ(0deg)   translateZ(0px); }
+  16%  { transform: perspective(900px) rotateX(3deg)   rotateY(-4deg)  rotateZ(.5deg)  translateZ(8px); }
+  33%  { transform: perspective(900px) rotateX(-2deg)  rotateY(5deg)   rotateZ(-.8deg) translateZ(14px); }
+  50%  { transform: perspective(900px) rotateX(4deg)   rotateY(2deg)   rotateZ(.4deg)  translateZ(20px); }
+  66%  { transform: perspective(900px) rotateX(-1deg)  rotateY(-6deg)  rotateZ(.6deg)  translateZ(10px); }
+  83%  { transform: perspective(900px) rotateX(2deg)   rotateY(3deg)   rotateZ(-.3deg) translateZ(5px); }
+  100% { transform: perspective(900px) rotateX(0deg)   rotateY(0deg)   rotateZ(0deg)   translateZ(0px); }
+}
+
+/* ============================================
+   PHOTO OUTER — 3D card surface
+   ============================================ */
 .photo-outer {
   position: relative;
   width: min(380px, 38vw);
@@ -357,14 +389,306 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   padding: 8px;
   background: var(--panel, #0d1a1a);
   overflow: hidden;
-  animation: frameDrop 1s cubic-bezier(.22,1,.36,1) both;
+
+  /* 3D transform-style so children stay in 3D space */
+  transform-style: preserve-3d;
+
+  /* Idle floating animation */
+  animation:
+    frameDrop 1s cubic-bezier(.22,1,.36,1) both,
+    float3D 9s ease-in-out 1s infinite;
+
+  /* Smooth hover transition */
+  transition:
+    border-color .3s ease,
+    box-shadow .4s ease;
+
+  /* GPU compositing hint */
+  will-change: transform;
 }
 
 @keyframes frameDrop {
-  from { opacity:0; transform: perspective(700px) rotateY(20deg) translateX(-40px); }
-  to   { opacity:1; transform: perspective(700px) rotateY(0deg)  translateX(0); }
+  from { opacity:0; transform: perspective(900px) rotateY(25deg) translateX(-60px) translateZ(-80px); }
+  to   { opacity:1; transform: perspective(900px) rotateY(0deg)  translateX(0)      translateZ(0); }
 }
 
+/* ============================================
+   HOVER — gyroscopic snap + depth push
+   ============================================ */
+.photo-frame:hover .photo-outer {
+  animation:
+    frameDrop 1s cubic-bezier(.22,1,.36,1) both,   /* keep drop (already done) */
+    hoverGyro 8s ease-in-out 1s infinite;           /* replace float with gyro */
+  border-color: rgba(10,255,239,.7);
+  box-shadow:
+    0 0 0 1px rgba(10,255,239,.15),
+    0 30px 80px rgba(0,0,0,.7),
+    0 0 60px rgba(10,255,239,.25),
+    0 0 120px rgba(10,255,239,.1);
+}
+
+@keyframes hoverGyro {
+  0%   { transform: perspective(900px) rotateX(0deg)   rotateY(0deg)   translateZ(0px) scale(1.00); }
+  12%  { transform: perspective(900px) rotateX(6deg)   rotateY(-8deg)  translateZ(30px) scale(1.03); }
+  25%  { transform: perspective(900px) rotateX(-5deg)  rotateY(10deg)  translateZ(40px) scale(1.04); }
+  37%  { transform: perspective(900px) rotateX(7deg)   rotateY(4deg)   translateZ(25px) scale(1.02); }
+  50%  { transform: perspective(900px) rotateX(-3deg)  rotateY(-9deg)  translateZ(50px) scale(1.05); }
+  62%  { transform: perspective(900px) rotateX(5deg)   rotateY(6deg)   translateZ(35px) scale(1.03); }
+  75%  { transform: perspective(900px) rotateX(-6deg)  rotateY(-3deg)  translateZ(20px) scale(1.02); }
+  88%  { transform: perspective(900px) rotateX(2deg)   rotateY(8deg)   translateZ(45px) scale(1.04); }
+  100% { transform: perspective(900px) rotateX(0deg)   rotateY(0deg)   translateZ(0px) scale(1.00); }
+}
+
+/* ============================================
+   HOLOGRAPHIC SHIMMER LAYER
+   A pseudo-element rainbow sweep that moves
+   in the opposite direction to the 3D tilt,
+   creating a real holographic foil illusion
+   ============================================ */
+.photo-outer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(10,255,239,.04) 20%,
+    rgba(120,80,255,.07) 35%,
+    rgba(255,80,120,.06) 50%,
+    rgba(10,255,239,.08) 65%,
+    rgba(255,200,80,.05) 80%,
+    transparent 100%
+  );
+  background-size: 300% 300%;
+  animation: holoShimmer 5s ease-in-out infinite;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity .4s;
+}
+
+.photo-frame:hover .photo-outer::after {
+  opacity: 1;
+}
+
+@keyframes holoShimmer {
+  0%   { background-position: 0%   0%;   }
+  25%  { background-position: 100% 0%;   }
+  50%  { background-position: 100% 100%; }
+  75%  { background-position: 0%   100%; }
+  100% { background-position: 0%   0%;   }
+}
+
+/* ============================================
+   DEPTH PARALLAX LAYERS
+   Multiple stacked pseudo-elements that shift
+   at different speeds, simulating parallax
+   depth inside the card
+   ============================================ */
+
+/* Layer 1 — innermost glow plane */
+.photo-outer .depth-layer-1,
+.photo-outer .depth-layer-2 {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.photo-outer .depth-layer-1 {
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(10,255,239,.12) 0%,
+    transparent 60%);
+  transform: translateZ(10px);
+  animation: depthPulse1 6s ease-in-out infinite;
+}
+
+.photo-outer .depth-layer-2 {
+  background: radial-gradient(ellipse at 30% 70%,
+    rgba(120,80,255,.08) 0%,
+    transparent 55%);
+  transform: translateZ(20px);
+  animation: depthPulse2 8s ease-in-out 1s infinite;
+}
+
+@keyframes depthPulse1 {
+  0%,100% { opacity:.4; transform: translateZ(10px) translate(0,0); }
+  50%     { opacity:.9; transform: translateZ(24px) translate(4px,-4px); }
+}
+
+@keyframes depthPulse2 {
+  0%,100% { opacity:.3; transform: translateZ(20px) translate(0,0); }
+  50%     { opacity:.7; transform: translateZ(38px) translate(-6px,6px); }
+}
+
+/* ============================================
+   FLOATING PARTICLE LAYER
+   Tiny dots that appear to orbit the card face
+   in 3D space
+   ============================================ */
+.photo-particles {
+  position: absolute;
+  inset: -40px;
+  z-index: 15;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.photo-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--cyan, #0affe0);
+  box-shadow: 0 0 6px 2px rgba(10,255,239,.8);
+  opacity: 0;
+}
+
+/* 8 particles orbiting in 3D */
+.photo-particle:nth-child(1)  { top: 20%; left: -20px; animation: orbit3D 4s ease-in-out .0s infinite; }
+.photo-particle:nth-child(2)  { top: 50%; left: -16px; animation: orbit3D 5s ease-in-out .6s infinite; }
+.photo-particle:nth-child(3)  { top: 80%; left:  -8px; animation: orbit3D 6s ease-in-out 1.2s infinite; }
+.photo-particle:nth-child(4)  { top: -12px; left: 30%; animation: orbit3DH 5s ease-in-out .3s infinite; }
+.photo-particle:nth-child(5)  { top: -8px;  left: 65%; animation: orbit3DH 4s ease-in-out 1.0s infinite; }
+.photo-particle:nth-child(6)  { top: 15%; right: -18px; animation: orbit3DR 6s ease-in-out .8s infinite; }
+.photo-particle:nth-child(7)  { top: 60%; right: -12px; animation: orbit3DR 4s ease-in-out 1.5s infinite; }
+.photo-particle:nth-child(8)  { bottom: -10px; left: 50%; animation: orbit3DH 5s ease-in-out .5s infinite; }
+
+@keyframes orbit3D {
+  0%   { opacity:0; transform: translateZ(-10px) translateX(0px); }
+  20%  { opacity:1; }
+  50%  { opacity:.8; transform: translateZ(30px) translateX(10px); }
+  80%  { opacity:1; }
+  100% { opacity:0; transform: translateZ(-10px) translateX(0px); }
+}
+
+@keyframes orbit3DH {
+  0%   { opacity:0; transform: translateZ(-10px) translateY(0px); }
+  20%  { opacity:1; }
+  50%  { opacity:.8; transform: translateZ(25px) translateY(12px); }
+  80%  { opacity:1; }
+  100% { opacity:0; transform: translateZ(-10px) translateY(0px); }
+}
+
+@keyframes orbit3DR {
+  0%   { opacity:0; transform: translateZ(-10px) translateX(0px); }
+  20%  { opacity:1; }
+  50%  { opacity:.8; transform: translateZ(28px) translateX(-10px); }
+  80%  { opacity:1; }
+  100% { opacity:0; transform: translateZ(-10px) translateX(0px); }
+}
+
+/* ============================================
+   3D SHADOW PLANE
+   A blurred shadow that moves opposite to the
+   card tilt, anchoring it to the "floor"
+   ============================================ */
+.photo-shadow-3d {
+  position: absolute;
+  left: 50%;
+  bottom: -30px;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 30px;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(10,255,239,.25) 0%,
+    transparent 70%);
+  filter: blur(12px);
+  pointer-events: none;
+  animation: shadowPulse 9s ease-in-out 1s infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes shadowPulse {
+  0%,100% { transform: translateX(-50%) scaleX(.8); opacity:.3; }
+  50%     { transform: translateX(-48%) scaleX(1.1); opacity:.7; }
+}
+
+/* ============================================
+   IMAGE — chromatic aberration on hover
+   ============================================ */
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  filter: brightness(1.05) contrast(1.05) saturate(1.85);
+  transition: filter .6s ease;
+  transform-style: preserve-3d;
+}
+
+.photo-frame:hover .photo-img {
+  filter:
+    brightness(1.15)
+    contrast(1.12)
+    saturate(1.2)
+    drop-shadow(0 0 8px rgba(10,255,239,.4));
+  animation: chromaAberration 6s ease-in-out infinite;
+}
+
+@keyframes chromaAberration {
+  0%,100% {
+    filter: brightness(1.12) contrast(1.1) saturate(1.2);
+  }
+  30% {
+    filter:
+      brightness(1.15) contrast(1.12) saturate(1.25)
+      drop-shadow(-2px 0 0 rgba(255,0,80,.15))
+      drop-shadow(2px 0 0 rgba(0,255,200,.15));
+  }
+  60% {
+    filter:
+      brightness(1.10) contrast(1.08) saturate(1.2)
+      drop-shadow(0 -2px 0 rgba(10,255,239,.12))
+      drop-shadow(0 2px 0 rgba(255,80,200,.10));
+  }
+}
+
+/* ============================================
+   Z-ELEVATION — label floats forward in Z
+   ============================================ */
+.photo-big-label {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 10px;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  animation: labelIn 1.4s .5s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes labelIn {
+  from { opacity:0; transform: translateY(12px) translateZ(-20px); }
+  to   { opacity:1; transform: translateY(0)     translateZ(20px);  }
+}
+
+.photo-big-label span {
+  font-family: var(--ff-h, 'Orbitron', monospace);
+  font-size: 5.5rem;
+  font-weight: 900;
+  line-height: .8;
+  text-transform: uppercase;
+  letter-spacing: -.03em;
+  color: rgba(10,255,239,.09);
+  -webkit-text-stroke: 1px rgba(10,255,239,.3);
+  mix-blend-mode: screen;
+  animation: labelFloat 7s ease-in-out infinite;
+  transform: translateZ(30px);
+}
+
+@keyframes labelFloat {
+  0%,100% { transform: translateZ(30px) translateY(0); }
+  50%     { transform: translateZ(50px) translateY(-5px); }
+}
+
+/* ============================================
+   EXISTING ELEMENTS — kept intact
+   ============================================ */
 .photo-outer::before {
   content: 'PROFILE_DATA · ID:001';
   position: absolute;
@@ -388,45 +712,6 @@ section{padding:6rem 5%;position:relative;z-index:1;}
 @keyframes cornerPulse {
   0%,100% { opacity:.5; }
   50%     { opacity:1; box-shadow:0 0 10px var(--cyan,#0affe0); }
-}
-
-.photo-img {
-  width:100%; height:100%;
-  object-fit:cover; object-position:center top;
-  display:block;
-  filter:brightness(1.05) contrast(1.05) saturate(1.85);
-  transition:filter .6s;
-}
-.photo-frame:hover .photo-img {
-  filter:brightness(1.12) contrast(1.1) saturate(1.15);
-}
-
-.photo-big-label {
-  position:absolute; inset:0; z-index:3;
-  display:flex; align-items:flex-end;
-  padding:12px 10px;
-  pointer-events:none;
-  animation: labelIn 1.4s .5s cubic-bezier(.22,1,.36,1) both;
-}
-@keyframes labelIn {
-  from { opacity:0; transform:translateY(12px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-.photo-big-label span {
-  font-family: var(--ff-h, 'Orbitron', monospace);
-  font-size: 5.5rem;
-  font-weight: 900;
-  line-height: .8;
-  text-transform: uppercase;
-  letter-spacing: -.03em;
-  color: rgba(10,255,239,.09);
-  -webkit-text-stroke: 1px rgba(10,255,239,.3);
-  mix-blend-mode: screen;
-  animation: labelFloat 7s ease-in-out infinite;
-}
-@keyframes labelFloat {
-  0%,100% { transform:translateY(0); }
-  50%     { transform:translateY(-5px); }
 }
 
 .photo-scan {
@@ -507,14 +792,6 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   50%     { box-shadow:0 0 80px rgba(10,255,239,.25),inset 0 0 40px rgba(10,255,239,.08); }
 }
 
-.photo-frame .photo-outer {
-  transition:transform .5s cubic-bezier(.22,1,.36,1), border-color .3s;
-}
-.photo-frame:hover .photo-outer {
-  transform:perspective(700px) rotateY(-5deg) rotateX(2deg) translateY(-6px);
-  border-color:rgba(10,255,239,.6);
-}
-
 .photo-frame::before {
   content:'';
   position:absolute;
@@ -574,7 +851,7 @@ section{padding:6rem 5%;position:relative;z-index:1;}
 .photo-info .pi-role {
   font-family: var(--ff-r, monospace);
   font-size:1.075rem;
-  color:#c8a060;  /* was #7ed4d4 */
+  color:#c8a060;
   letter-spacing:.2em;
   text-transform:uppercase;
   margin-bottom:2.5rem;
@@ -626,14 +903,38 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   z-index:0;
 }
 
+/* ============================================
+   OPTIONAL: JS pointer-tracking (tilt.js style)
+   Add this script to your HTML for live tilt:
+
+   document.querySelectorAll('.photo-outer').forEach(card => {
+     card.addEventListener('mousemove', e => {
+       const r = card.getBoundingClientRect();
+       const x = (e.clientX - r.left) / r.width  - .5;
+       const y = (e.clientY - r.top)  / r.height - .5;
+       card.style.transform =
+         `perspective(900px)
+          rotateY(${x * 22}deg)
+          rotateX(${-y * 18}deg)
+          translateZ(28px)
+          scale(1.04)`;
+     });
+     card.addEventListener('mouseleave', () => {
+       card.style.transform = '';
+     });
+   });
+   ============================================ */
+
 @media(max-width:860px){
   .photo-wrap{
     grid-template-columns:1fr;
     min-height:auto;
+    perspective: 800px;
   }
   .photo-frame{
     min-height:60vw;
     padding:10vh 6vw 6vh;
+    perspective: 600px;
   }
   .photo-outer{
     width:min(300px,70vw);
@@ -648,7 +949,14 @@ section{padding:6rem 5%;position:relative;z-index:1;}
   .photo-info::before{display:none;}
   .photo-info h2{font-size:clamp(2.58rem, 10vw, 5.375rem);}
   .photo-bg-name span{font-size:clamp(5.375rem, 22vw, 15.05rem);}
+
+  /* Reduce 3D intensity on mobile */
+  @keyframes float3D {
+    0%,100% { transform: perspective(600px) rotateX(0deg)   rotateY(0deg)  translateZ(0px); }
+    50%     { transform: perspective(600px) rotateX(2deg)   rotateY(3deg)  translateZ(8px); }
+  }
 }
+
 
 /* SKILLS */
 #skills{background:var(--bg);}
@@ -680,20 +988,510 @@ section{padding:6rem 5%;position:relative;z-index:1;}
 .sbar-fl{height:100%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));width:0;transition:width 1.2s cubic-bezier(.16,1,.3,1);box-shadow:0 0 6px rgba(10,255,239,0.5);}
 
 /* EXPERIENCE */
-#experience{background:var(--bg2);}
-.timeline-alt{max-width:900px;margin:3rem auto 0;display:flex;flex-direction:column;gap:0;}
-.tl-item{display:grid;grid-template-columns:120px 1fr;gap:2rem;padding-bottom:3rem;position:relative;}
-.tl-item::after{content:'';position:absolute;left:119px;top:8px;bottom:0;width:1px;background:linear-gradient(to bottom,rgba(10,255,239,0.3),transparent);}
-.tl-item:last-child::after{display:none;}
-.tl-left{text-align:right;padding-top:.15rem;}
-.tl-period{font-family:var(--ff-h);font-size:0.537rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--orange);}
-.tl-dot{width:10px;height:10px;border:2px solid var(--cyan);background:var(--bg);box-shadow:0 0 12px rgba(10,255,239,0.5);position:absolute;left:115px;top:6px;}
-.tl-right{padding-left:.5rem;}
-.tl-role{font-family:var(--ff-h);font-size:1.075rem;font-weight:700;color:var(--white);margin-bottom:.2rem;letter-spacing:0.04em;}
-.tl-org{font-family:var(--ff-h);font-size:0.591rem;letter-spacing:2px;text-transform:uppercase;color:var(--cyan2);margin-bottom:.9rem;}
-.tl-list{list-style:none;display:flex;flex-direction:column;gap:.4rem;}
-.tl-list li{font-size:0.806rem;color:#d4a855;padding-left:1.1rem;position:relative;line-height:1.7;}  /* was #7acfcf */
-.tl-list li::before{content:'■';position:absolute;left:0;font-size:0.376rem;color:var(--orange);top:.55rem;}
+/* ============================================================
+   EXPERIENCE SECTION — Timeline with 3D letter-drop animations
+   Letters tumble in from all four sides (top / bottom / left / right)
+   Each letter spins on its own axis before locking into place
+   ============================================================ */
+
+#experience { background: var(--bg2); }
+
+/* ============================================================
+   TIMELINE LAYOUT
+   ============================================================ */
+.timeline-alt {
+  max-width: 900px;
+  margin: 3rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tl-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 2rem;
+  padding-bottom: 3rem;
+  position: relative;
+}
+
+.tl-item::after {
+  content: '';
+  position: absolute;
+  left: 119px;
+  top: 8px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(10,255,239,0.3), transparent);
+}
+
+.tl-item:last-child::after { display: none; }
+
+.tl-left {
+  text-align: right;
+  padding-top: .15rem;
+}
+
+.tl-period {
+  font-family: var(--ff-h);
+  font-size: 0.537rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.tl-dot {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--cyan);
+  background: var(--bg);
+  box-shadow: 0 0 12px rgba(10,255,239,0.5);
+  position: absolute;
+  left: 115px;
+  top: 6px;
+}
+
+.tl-right { padding-left: .5rem; }
+
+.tl-org {
+  font-family: var(--ff-h);
+  font-size: 0.591rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan2);
+  margin-bottom: .9rem;
+}
+
+.tl-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.tl-list li {
+  font-size: 0.806rem;
+  color: #d4a855;
+  padding-left: 1.1rem;
+  position: relative;
+  line-height: 1.7;
+}
+
+.tl-list li::before {
+  content: '■';
+  position: absolute;
+  left: 0;
+  font-size: 0.376rem;
+  color: var(--orange);
+  top: .55rem;
+}
+
+/* ============================================================
+   3D LETTER ANIMATION SYSTEM
+   Each .tl-role letter is wrapped in a <span class="l">
+   by JS (see script below). The parent .tl-role gets
+   perspective so children can rotate in 3D space.
+   ============================================================ */
+
+.tl-role {
+  font-family: var(--ff-h);
+  font-size: 1.075rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: .2rem;
+  letter-spacing: 0.04em;
+
+  /* 3D scene for child letters */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  perspective: 600px;
+  perspective-origin: 50% 50%;
+  overflow: visible;
+}
+
+/* Each letter wrapper — sets its own local 3D space */
+.tl-role .l {
+  display: inline-block;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+
+  /* Default: hidden, waiting for .in-view trigger */
+  opacity: 0;
+
+  /* Hover state on the whole .tl-role */
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+/* Space character — just show it */
+.tl-role .l.sp {
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+/* ---- Incoming direction variants ---- */
+
+/* FROM TOP — falls down, rotates on X */
+.tl-role .l.from-top {
+  animation: letterFromTop .65s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* FROM BOTTOM — rises up, rotates on X reversed */
+.tl-role .l.from-bottom {
+  animation: letterFromBottom .65s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* FROM LEFT — slides right, rotates on Y */
+.tl-role .l.from-left {
+  animation: letterFromLeft .65s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* FROM RIGHT — slides left, rotates on Y reversed */
+.tl-role .l.from-right {
+  animation: letterFromRight .65s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ---- Keyframes: each starts fully rotated + offset, lands at 0 ---- */
+
+@keyframes letterFromTop {
+  0% {
+    opacity: 0;
+    transform:
+      translateY(-60px)
+      translateZ(-40px)
+      rotateX(-90deg)
+      rotateZ(-12deg)
+      scale(.6);
+  }
+  60% {
+    opacity: 1;
+    transform:
+      translateY(6px)
+      translateZ(8px)
+      rotateX(8deg)
+      rotateZ(2deg)
+      scale(1.08);
+  }
+  80% {
+    transform:
+      translateY(-3px)
+      translateZ(4px)
+      rotateX(-4deg)
+      rotateZ(-1deg)
+      scale(.97);
+  }
+  100% {
+    opacity: 1;
+    transform:
+      translateY(0)
+      translateZ(0)
+      rotateX(0deg)
+      rotateZ(0deg)
+      scale(1);
+  }
+}
+
+@keyframes letterFromBottom {
+  0% {
+    opacity: 0;
+    transform:
+      translateY(60px)
+      translateZ(-40px)
+      rotateX(90deg)
+      rotateZ(12deg)
+      scale(.6);
+  }
+  60% {
+    opacity: 1;
+    transform:
+      translateY(-6px)
+      translateZ(8px)
+      rotateX(-8deg)
+      rotateZ(-2deg)
+      scale(1.08);
+  }
+  80% {
+    transform:
+      translateY(3px)
+      translateZ(4px)
+      rotateX(4deg)
+      rotateZ(1deg)
+      scale(.97);
+  }
+  100% {
+    opacity: 1;
+    transform:
+      translateY(0)
+      translateZ(0)
+      rotateX(0deg)
+      rotateZ(0deg)
+      scale(1);
+  }
+}
+
+@keyframes letterFromLeft {
+  0% {
+    opacity: 0;
+    transform:
+      translateX(-70px)
+      translateZ(-40px)
+      rotateY(90deg)
+      rotateZ(15deg)
+      scale(.6);
+  }
+  60% {
+    opacity: 1;
+    transform:
+      translateX(6px)
+      translateZ(10px)
+      rotateY(-10deg)
+      rotateZ(-2deg)
+      scale(1.08);
+  }
+  80% {
+    transform:
+      translateX(-3px)
+      translateZ(4px)
+      rotateY(5deg)
+      rotateZ(1deg)
+      scale(.97);
+  }
+  100% {
+    opacity: 1;
+    transform:
+      translateX(0)
+      translateZ(0)
+      rotateY(0deg)
+      rotateZ(0deg)
+      scale(1);
+  }
+}
+
+@keyframes letterFromRight {
+  0% {
+    opacity: 0;
+    transform:
+      translateX(70px)
+      translateZ(-40px)
+      rotateY(-90deg)
+      rotateZ(-15deg)
+      scale(.6);
+  }
+  60% {
+    opacity: 1;
+    transform:
+      translateX(-6px)
+      translateZ(10px)
+      rotateY(10deg)
+      rotateZ(2deg)
+      scale(1.08);
+  }
+  80% {
+    transform:
+      translateX(3px)
+      translateZ(4px)
+      rotateY(-5deg)
+      rotateZ(-1deg)
+      scale(.97);
+  }
+  100% {
+    opacity: 1;
+    transform:
+      translateX(0)
+      translateZ(0)
+      rotateY(0deg)
+      rotateZ(0deg)
+      scale(1);
+  }
+}
+
+/* ============================================================
+   HOVER EFFECT — individual letters lift and glow
+   ============================================================ */
+.tl-role:hover .l {
+  animation-play-state: paused; /* freeze landing anim on hover */
+}
+
+.tl-role .l:hover {
+  color: var(--cyan, #0affe0);
+  text-shadow:
+    0 0 12px rgba(10,255,239,.8),
+    0 0 30px rgba(10,255,239,.4);
+  transform:
+    translateZ(18px)
+    rotateX(-8deg)
+    scale(1.25) !important;
+  transition:
+    transform .2s cubic-bezier(.22,1,.36,1),
+    color .2s,
+    text-shadow .2s;
+  z-index: 10;
+}
+
+/* ============================================================
+   DOT PULSE — 3D glow animation for timeline dot
+   ============================================================ */
+.tl-dot {
+  animation: dotPulse3D 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes dotPulse3D {
+  0%,100% {
+    box-shadow: 0 0 8px rgba(10,255,239,.4);
+    transform: scale(1) rotateZ(0deg);
+  }
+  33% {
+    box-shadow:
+      0 0 20px rgba(10,255,239,.9),
+      0 0 40px rgba(10,255,239,.3);
+    transform: scale(1.4) rotateZ(45deg);
+  }
+  66% {
+    box-shadow:
+      0 0 14px rgba(10,255,239,.6),
+      0 0 28px rgba(10,255,239,.2);
+    transform: scale(1.1) rotateZ(90deg);
+  }
+}
+
+/* ============================================================
+   PERIOD 3D FLIP-IN
+   The year/date label flips in on scroll
+   ============================================================ */
+.tl-period {
+  display: inline-block;
+  transform-origin: left center;
+  animation: periodFlip .7s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes periodFlip {
+  from {
+    opacity: 0;
+    transform: perspective(300px) rotateY(-70deg) translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(300px) rotateY(0deg) translateX(0);
+  }
+}
+
+/* ============================================================
+   LIST ITEMS — slide-rotate in from left with 3D depth
+   ============================================================ */
+.tl-list li {
+  opacity: 0;
+  animation: listItem3D .55s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* Stagger each bullet */
+.tl-list li:nth-child(1) { animation-delay: .55s; }
+.tl-list li:nth-child(2) { animation-delay: .70s; }
+.tl-list li:nth-child(3) { animation-delay: .85s; }
+.tl-list li:nth-child(4) { animation-delay: 1.0s; }
+.tl-list li:nth-child(5) { animation-delay: 1.15s; }
+
+@keyframes listItem3D {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(30deg) translateY(16px) translateZ(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateX(0deg) translateY(0) translateZ(0);
+  }
+}
+
+/* ============================================================
+   CONNECTOR LINE — animate draw
+   ============================================================ */
+.tl-item::after {
+  animation: lineDraw 1s .3s cubic-bezier(.22,1,.36,1) both;
+  transform-origin: top center;
+}
+
+@keyframes lineDraw {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* ============================================================
+   ORG LABEL — scan-in from right with perspective warp
+   ============================================================ */
+.tl-org {
+  opacity: 0;
+  animation: orgScan .6s .45s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes orgScan {
+  from {
+    opacity: 0;
+    transform: perspective(300px) rotateY(25deg) translateX(20px);
+    letter-spacing: 8px;
+  }
+  to {
+    opacity: 1;
+    transform: perspective(300px) rotateY(0deg) translateX(0);
+    letter-spacing: 2px;
+  }
+}
+
+/* ============================================================
+   JAVASCRIPT — paste into your <script> tag
+   Splits each .tl-role into per-letter <span>s and assigns
+   a random direction (top/bottom/left/right) to each letter,
+   with staggered animation-delay
+
+   const SIDES = ['from-top','from-bottom','from-left','from-right'];
+
+   document.querySelectorAll('.tl-role').forEach(role => {
+     const text = role.textContent;
+     role.innerHTML = [...text].map((ch, i) => {
+       if (ch === ' ') return `<span class="l sp">&nbsp;</span>`;
+       const side = SIDES[i % 4]; // cycle through all 4 sides
+       const delay = (i * 0.045).toFixed(3);
+       return `<span class="l ${side}" style="animation-delay:${delay}s">${ch}</span>`;
+     }).join('');
+   });
+
+   ============================================================ */
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .tl-item {
+    grid-template-columns: 80px 1fr;
+    gap: 1rem;
+  }
+  .tl-item::after { left: 79px; }
+  .tl-dot { left: 75px; }
+
+  .tl-role {
+    font-size: .9rem;
+    perspective: 400px;
+  }
+
+  @keyframes letterFromTop {
+    0%   { opacity:0; transform: translateY(-30px) rotateX(-70deg) scale(.7); }
+    100% { opacity:1; transform: translateY(0)     rotateX(0deg)   scale(1);  }
+  }
+  @keyframes letterFromBottom {
+    0%   { opacity:0; transform: translateY(30px) rotateX(70deg) scale(.7); }
+    100% { opacity:1; transform: translateY(0)    rotateX(0deg)  scale(1);  }
+  }
+  @keyframes letterFromLeft {
+    0%   { opacity:0; transform: translateX(-30px) rotateY(70deg) scale(.7); }
+    100% { opacity:1; transform: translateX(0)     rotateY(0deg)  scale(1);  }
+  }
+  @keyframes letterFromRight {
+    0%   { opacity:0; transform: translateX(30px) rotateY(-70deg) scale(.7); }
+    100% { opacity:1; transform: translateX(0)    rotateY(0deg)   scale(1);  }
+  }
+}
 
 /* PROJECTS */
 #projects{background:var(--bg);}
@@ -1796,6 +2594,8 @@ document.getElementById('cfSubmit').addEventListener('click',async()=>{
     }finally{btn.disabled=false;btn.textContent='Send Message //';}
     return;
   }
+
+
 
   // Fallback: open Gmail compose with prefilled fields
   openGmailFallback(name,email,sub,msg);
