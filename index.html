@@ -1656,21 +1656,49 @@ function doLogin(){if(document.getElementById('adminPass').value===PASS){documen
 document.getElementById('adminLogoutBtn').addEventListener('click',()=>{document.getElementById('adminUpload').style.display='none';document.getElementById('adminLogin').style.display='block';document.getElementById('adminPanel').classList.remove('open');});
 document.querySelectorAll('.atab').forEach(tab=>tab.addEventListener('click',function(){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));this.classList.add('active');document.getElementById(this.dataset.tab).classList.add('on');}));
 
-// Contact
+// Contact — opens Gmail directly, no EmailJS required
 document.getElementById('cfSubmit').addEventListener('click',async()=>{
-  const name=document.getElementById('cfName').value.trim(),email=document.getElementById('cfEmail').value.trim(),sub=document.getElementById('cfSub').value.trim(),msg=document.getElementById('cfMsg').value.trim();
+  const name=document.getElementById('cfName').value.trim(),
+        email=document.getElementById('cfEmail').value.trim(),
+        sub=document.getElementById('cfSub').value.trim(),
+        msg=document.getElementById('cfMsg').value.trim();
   const res=document.getElementById('cfResult'),btn=document.getElementById('cfSubmit');
   res.className='cfmsg';res.style.display='none';
+
+  // Validation
   if(!name||!email||!msg){res.textContent='Please fill in Name, Email and Message.';res.className='cfmsg err';res.style.display='block';return;}
   if(!/\S+@\S+\.\S+/.test(email)){res.textContent='Please enter a valid email.';res.className='cfmsg err';res.style.display='block';return;}
-  if(EJS_SVC==='YOUR_SERVICE_ID'){res.textContent='EmailJS not configured. Please email: navrajkumaryadav2075@gmail.com';res.className='cfmsg err';res.style.display='block';return;}
-  btn.disabled=true;btn.textContent='Transmitting...';
-  try{await emailjs.send(EJS_SVC,EJS_TPL,{from_name:name,from_email:email,subject:sub||'Portfolio Contact',message:msg,to_name:'Navraj'});res.textContent='✓ Message sent! Navraj will respond soon.';res.className='cfmsg ok';res.style.display='block';['cfName','cfEmail','cfSub','cfMsg'].forEach(id=>document.getElementById(id).value='');}
-  catch{res.textContent='Transmission failed. Email: navrajkumaryadav2075@gmail.com';res.className='cfmsg err';res.style.display='block';}
-  finally{btn.disabled=false;btn.textContent='Send Message //';}
+
+  // Try EmailJS first if configured
+  if(EJS_SVC!=='YOUR_SERVICE_ID'){
+    btn.disabled=true;btn.textContent='Transmitting...';
+    try{
+      await emailjs.send(EJS_SVC,EJS_TPL,{from_name:name,from_email:email,subject:sub||'Portfolio Contact',message:msg,to_name:'Navraj'});
+      res.textContent='✓ Message sent! Navraj will respond soon.';res.className='cfmsg ok';res.style.display='block';
+      ['cfName','cfEmail','cfSub','cfMsg'].forEach(id=>document.getElementById(id).value='');
+    }catch{
+      res.textContent='Transmission failed. Opening Gmail fallback...';res.className='cfmsg err';res.style.display='block';
+      openGmailFallback(name,email,sub,msg);
+    }finally{btn.disabled=false;btn.textContent='Send Message //';}
+    return;
+  }
+
+  // Fallback: open Gmail compose with prefilled fields
+  openGmailFallback(name,email,sub,msg);
+  res.textContent='✓ Gmail opened! Your message is prefilled — just hit Send.';
+  res.className='cfmsg ok';res.style.display='block';
+  ['cfName','cfEmail','cfSub','cfMsg'].forEach(id=>document.getElementById(id).value='');
+  btn.textContent='Send Message //';
 });
 
-// Chatbot — Purple
+function openGmailFallback(name,email,sub,msg){
+  const to='navrajkumaryadav2075@gmail.com';
+  const subject=encodeURIComponent(sub||'Portfolio Contact from '+name);
+  const body=encodeURIComponent('Name: '+name+'\nEmail: '+email+'\n\nMessage:\n'+msg);
+  window.open('https://mail.google.com/mail/?view=cm&to='+to+'&su='+subject+'&body='+body,'_blank');
+}
+
+// Chatbot
 const faq={skills:'💻 Python, SAP ABAP, JavaScript, HTML/CSS, SQL, and SAP ERP systems.',education:'🎓 B.Tech CE · PCCOE Pune · 2026. DSA, DBMS, Systems Design, Web Dev.',projects:'🚀 Full-Stack Web Platform, AI Emotion Music Recommender, SAP ABAP Suite, Analytics Dashboard.',contact:'📩 navrajkumaryadav2075@gmail.com | +91 9153906212',experience:'💼 Club President 2023–25, SAP ABAP Trainee, Deloitte Analytics Sim, Forage Data Labeling.',sap:'🏢 Classical/ALV Reports, Smart Forms, CDS Views, LSMW, SE11, S/4HANA, AMDP, Debugging.',hire:'✅ Open to internships & jobs! navrajkumaryadav2075@gmail.com',resume:'📄 Check out the Resume section on this page to view or download Navraj\'s CV!'};
 const qrs=['Skills','SAP ABAP','Projects','Experience','Resume','Contact','Hire?'];
 function addB(t){const d=document.createElement('div');d.className='mb';d.textContent=t;document.getElementById('cmsgs').appendChild(d);document.getElementById('cmsgs').scrollTop=9999;}
