@@ -938,15 +938,107 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
   .photo-outer{width:180px;height:215px;}
 }
 
-.nsearch{display:flex;align-items:center;gap:8px;position:relative;}
-.nsearch-icon{background:none;border:none;cursor:pointer;color:#4a9999;display:flex;align-items:center;padding:6px;transition:all .3s;border:1px solid transparent;border-radius:4px;}
-.nsearch-icon:hover{color:var(--cyan);text-shadow:0 0 10px var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(0,200,200,0.15);}
-.nsearch-bar{display:flex;align-items:center;gap:6px;position:absolute;right:32px;top:50%;transform:translateY(-50%);background:rgba(2,10,15,0.95);border:1px solid var(--cyan);border-radius:4px;padding:4px 10px;width:0;overflow:hidden;opacity:0;transition:width .4s ease,opacity .3s ease;pointer-events:none;}
-.nsearch-bar.open{width:220px;opacity:1;pointer-events:all;}
-.nsearch-input{background:none;border:none;outline:none;color:var(--cyan);font-family:var(--ff-h);font-size:.6rem;letter-spacing:2px;width:100%;caret-color:var(--cyan);}
-.nsearch-input::placeholder{color:#4a9999;letter-spacing:1.5px;}
-.nsearch-close{background:none;border:none;cursor:pointer;color:#4a9999;font-size:.6rem;padding:0;line-height:1;transition:color .3s;flex-shrink:0;}
-.nsearch-close:hover{color:var(--cyan);}
+/* ── Search Container ── */
+.nsearch {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* ── Search Icon Button ── */
+.nsearch-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: .45rem;
+  cursor: pointer;
+  color: var(--fg);
+  transition: border-color .2s, color .2s, background .2s;
+}
+.nsearch-icon:hover {
+  border-color: var(--lav);
+  color: var(--lav);
+  background: rgba(155,139,180,0.07);
+}
+
+/* ── Search Bar (hidden by default) ── */
+.nsearch-bar {
+  display: none;                       /* toggled to flex via JS */
+  align-items: center;
+  gap: .4rem;
+  background: var(--bg2);
+  border: 1px solid var(--lav);
+  border-radius: 2px;
+  padding: .3rem .5rem .3rem .8rem;
+  box-shadow: 0 4px 20px rgba(155,139,180,0.12);
+  animation: searchSlideIn .2s ease;
+}
+
+@keyframes searchSlideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Search Input ── */
+.nsearch-input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: .82rem;
+  letter-spacing: .5px;
+  width: 200px;
+  caret-color: var(--lav);
+}
+.nsearch-input::placeholder {
+  color: var(--dimb);
+  opacity: .6;
+  letter-spacing: 1px;
+  font-size: .78rem;
+}
+
+/* ── Close Button ── */
+.nsearch-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dimb);
+  font-size: .8rem;
+  padding: .2rem .35rem;
+  border-radius: 2px;
+  transition: color .2s, background .2s;
+  line-height: 1;
+}
+.nsearch-close:hover {
+  color: var(--fg);
+  background: rgba(155,139,180,0.1);
+}
+
+/* ── Mobile ── */
+@media (max-width: 960px) {
+  .nsearch-input {
+    width: 140px;
+  }
+  .nsearch-bar {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+  }
+}
+
+@media (max-width: 600px) {
+  .nsearch-input {
+    width: 110px;
+    font-size: .75rem;
+  }
+}
+
 
 </style>
 </head>
@@ -978,7 +1070,7 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
   </ul>
   <div class="nsearch" id="nsearch">
     <div class="nsearch-bar" id="nsearch-bar">
-      <input type="text" class="nsearch-input" id="nsearch-input" placeholder="Search Google..." />
+      <input type="text" class="nsearch-input" id="nsearch-input" placeholder="Search..." />
       <button class="nsearch-close" id="nsearch-close">✕</button>
     </div>
     <button class="nsearch-icon" id="nsearch-icon">
@@ -1556,7 +1648,7 @@ footer{background:var(--bg);border-top:2px solid rgba(10,255,239,0.25);padding:2
 <script>
 const EJS_SVC='YOUR_SERVICE_ID',EJS_TPL='YOUR_TEMPLATE_ID',EJS_KEY='YOUR_PUBLIC_KEY';
 emailjs.init(EJS_KEY);
-const PASS='admin@2025',CK='nky_c_v4',MK='nky_m_v4';
+const PASS='navraj@admin2025',CK='nky_c_v4',MK='nky_m_v4';
 
 // Cursor
 const cur=document.getElementById('cur'),ring=document.getElementById('curring');
@@ -1734,22 +1826,56 @@ document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Ent
 
 
 
-const searchIcon = document.getElementById('nsearch-icon');
-const searchBar  = document.getElementById('nsearch-bar');
-const searchInput= document.getElementById('nsearch-input');
-const searchClose= document.getElementById('nsearch-close');
+//google search area
 
-searchIcon.addEventListener('click', () => {
-  searchBar.classList.add('open');
-  searchInput.focus();
+const nsearchIcon  = document.getElementById('nsearch-icon');
+const nsearchBar   = document.getElementById('nsearch-bar');
+const nsearchInput = document.getElementById('nsearch-input');
+const nsearchClose = document.getElementById('nsearch-close');
+
+// Open search bar
+nsearchIcon.addEventListener('click', () => {
+  nsearchBar.style.display = 'flex';
+  nsearchIcon.style.display = 'none';
+  nsearchInput.focus();
 });
-searchClose.addEventListener('click', () => {
-  searchBar.classList.remove('open');
-  searchInput.value = '';
+
+// Close search bar
+nsearchClose.addEventListener('click', () => {
+  nsearchBar.style.display = 'none';
+  nsearchIcon.style.display = 'flex';
+  nsearchInput.value = '';
 });
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape'){ searchBar.classList.remove('open'); searchInput.value=''; }
+
+// Search on Enter key → opens Google in new tab
+nsearchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const query = nsearchInput.value.trim();
+    if (query) {
+      window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
+      nsearchInput.value = '';
+    }
+  }
 });
+
+// Also search on clicking the search icon while bar is open (click icon again = submit)
+nsearchIcon.addEventListener('click', () => {
+  const query = nsearchInput.value.trim();
+  if (query) {
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
+  }
+});
+
+// Close search bar when clicking outside
+document.addEventListener('click', (e) => {
+  const nsearch = document.getElementById('nsearch');
+  if (!nsearch.contains(e.target)) {
+    nsearchBar.style.display = 'none';
+    nsearchIcon.style.display = 'flex';
+    nsearchInput.value = '';
+  }
+});
+
 
 // Init
 renderCerts();renderMats();
