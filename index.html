@@ -2448,18 +2448,27 @@ const EJS_SVC='YOUR_SERVICE_ID',EJS_TPL='YOUR_TEMPLATE_ID',EJS_KEY='YOUR_PUBLIC_
 emailjs.init(EJS_KEY);
 const PASS='navraj@admin2025',CK='nky_c_v4',MK='nky_m_v4';
 
-// Cursor
-const cur=document.getElementById('cur'),ring=document.getElementById('curring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
-(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(tick);})();
+// Cursor - only on mouse/desktop devices
+if(window.matchMedia('(pointer:fine)').matches){
+  const cur=document.getElementById('cur'),ring=document.getElementById('curring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+  (function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(tick);})();
+}
 
 // Loader
 window.addEventListener('load',()=>setTimeout(()=>{const l=document.getElementById('loader');l.classList.add('out');setTimeout(()=>l.remove(),1000);},2200));
 
-// Nav
-document.getElementById('hbg').addEventListener('click',()=>document.getElementById('nlinks').classList.toggle('open'));
-document.querySelectorAll('.nlinks a').forEach(a=>a.addEventListener('click',()=>document.getElementById('nlinks').classList.remove('open')));
+// Nav - with touch support for mobile
+const hbgBtn=document.getElementById('hbg'),nlinksEl=document.getElementById('nlinks');
+function toggleNav(){nlinksEl.classList.toggle('open');}
+hbgBtn.addEventListener('click',toggleNav);
+hbgBtn.addEventListener('touchend',function(e){e.preventDefault();toggleNav();},{passive:false});
+document.querySelectorAll('.nlinks a').forEach(a=>{
+  a.addEventListener('click',()=>nlinksEl.classList.remove('open'));
+  a.addEventListener('touchend',()=>nlinksEl.classList.remove('open'));
+});
+document.addEventListener('touchstart',e=>{if(!e.target.closest('nav'))nlinksEl.classList.remove('open');},{passive:true});
 
 // Reveal
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');}}),{threshold:.1});
@@ -2476,7 +2485,7 @@ document.getElementById('skillCats').addEventListener('click',e=>{
 });
 setTimeout(()=>document.querySelectorAll('#sp1 .sbar-fl').forEach(b=>{b.style.width=b.dataset.w+'%';}),700);
 
-// Data
+// Data helpers
 function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]');}catch{return[];}}
 function save(k,d){try{localStorage.setItem(k,JSON.stringify(d));}catch{alert('Storage full.');}}
 function fdate(ym){if(!ym)return'';const[y,m]=ym.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y;}
@@ -2568,7 +2577,7 @@ function doLogin(){if(document.getElementById('adminPass').value===PASS){documen
 document.getElementById('adminLogoutBtn').addEventListener('click',()=>{document.getElementById('adminUpload').style.display='none';document.getElementById('adminLogin').style.display='block';document.getElementById('adminPanel').classList.remove('open');});
 document.querySelectorAll('.atab').forEach(tab=>tab.addEventListener('click',function(){document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));this.classList.add('active');document.getElementById(this.dataset.tab).classList.add('on');}));
 
-// Contact — opens Gmail directly, no EmailJS required
+// Contact — Gmail fallback when EmailJS not configured
 document.getElementById('cfSubmit').addEventListener('click',async()=>{
   const name=document.getElementById('cfName').value.trim(),
         email=document.getElementById('cfEmail').value.trim(),
@@ -2576,12 +2585,8 @@ document.getElementById('cfSubmit').addEventListener('click',async()=>{
         msg=document.getElementById('cfMsg').value.trim();
   const res=document.getElementById('cfResult'),btn=document.getElementById('cfSubmit');
   res.className='cfmsg';res.style.display='none';
-
-  // Validation
   if(!name||!email||!msg){res.textContent='Please fill in Name, Email and Message.';res.className='cfmsg err';res.style.display='block';return;}
   if(!/\S+@\S+\.\S+/.test(email)){res.textContent='Please enter a valid email.';res.className='cfmsg err';res.style.display='block';return;}
-
-  // Try EmailJS first if configured
   if(EJS_SVC!=='YOUR_SERVICE_ID'){
     btn.disabled=true;btn.textContent='Transmitting...';
     try{
@@ -2594,17 +2599,12 @@ document.getElementById('cfSubmit').addEventListener('click',async()=>{
     }finally{btn.disabled=false;btn.textContent='Send Message //';}
     return;
   }
-
-
-
-  // Fallback: open Gmail compose with prefilled fields
   openGmailFallback(name,email,sub,msg);
   res.textContent='✓ Gmail opened! Your message is prefilled — just hit Send.';
   res.className='cfmsg ok';res.style.display='block';
   ['cfName','cfEmail','cfSub','cfMsg'].forEach(id=>document.getElementById(id).value='');
   btn.textContent='Send Message //';
 });
-
 function openGmailFallback(name,email,sub,msg){
   const to='navrajkumaryadav2075@gmail.com';
   const subject=encodeURIComponent(sub||'Portfolio Contact from '+name);
@@ -2624,58 +2624,51 @@ document.getElementById('cwx').addEventListener('click',()=>document.getElementB
 document.getElementById('cgo').addEventListener('click',()=>{const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';});
 document.getElementById('cinput').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=document.getElementById('cinput').value.trim();if(!v)return;hQ(v);document.getElementById('cinput').value='';}});
 
+// Google Search in Nav
+const nsearchIcon=document.getElementById('nsearch-icon');
+const nsearchBar=document.getElementById('nsearch-bar');
+const nsearchInput=document.getElementById('nsearch-input');
+const nsearchClose=document.getElementById('nsearch-close');
 
-
-//google search area
-
-const nsearchIcon  = document.getElementById('nsearch-icon');
-const nsearchBar   = document.getElementById('nsearch-bar');
-const nsearchInput = document.getElementById('nsearch-input');
-const nsearchClose = document.getElementById('nsearch-close');
-
-// Open search bar
-nsearchIcon.addEventListener('click', () => {
-  nsearchBar.style.display = 'flex';
-  nsearchIcon.style.display = 'none';
-  nsearchInput.focus();
+// FIX: single click handler — opens bar OR submits if bar already open
+nsearchIcon.addEventListener('click',()=>{
+  if(nsearchBar.style.display==='flex'){
+    // bar is open — submit search
+    const query=nsearchInput.value.trim();
+    if(query)window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank');
+  } else {
+    // bar is closed — open it
+    nsearchBar.style.display='flex';
+    nsearchIcon.style.display='none';
+    nsearchInput.focus();
+  }
 });
-
-// Close search bar
-nsearchClose.addEventListener('click', () => {
-  nsearchBar.style.display = 'none';
-  nsearchIcon.style.display = 'flex';
-  nsearchInput.value = '';
+nsearchClose.addEventListener('click',()=>{
+  nsearchBar.style.display='none';
+  nsearchIcon.style.display='flex';
+  nsearchInput.value='';
 });
-
-// Search on Enter key → opens Google in new tab
-nsearchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    const query = nsearchInput.value.trim();
-    if (query) {
-      window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
-      nsearchInput.value = '';
-    }
+nsearchInput.addEventListener('keydown',(e)=>{
+  if(e.key==='Enter'){
+    const query=nsearchInput.value.trim();
+    if(query){window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank');nsearchInput.value='';}
+  }
+});
+document.addEventListener('click',(e)=>{
+  const nsearch=document.getElementById('nsearch');
+  if(nsearch&&!nsearch.contains(e.target)){
+    nsearchBar.style.display='none';
+    nsearchIcon.style.display='flex';
+    nsearchInput.value='';
   }
 });
 
-// Also search on clicking the search icon while bar is open (click icon again = submit)
-nsearchIcon.addEventListener('click', () => {
-  const query = nsearchInput.value.trim();
-  if (query) {
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
-  }
-});
-
-// Close search bar when clicking outside
-document.addEventListener('click', (e) => {
-  const nsearch = document.getElementById('nsearch');
-  if (!nsearch.contains(e.target)) {
-    nsearchBar.style.display = 'none';
-    nsearchIcon.style.display = 'flex';
-    nsearchInput.value = '';
-  }
-});
-
+// Resume Admin
+const RES_KEY='nky_resume_v1';
+function loadResume(){const d=localStorage.getItem(RES_KEY);if(d){document.getElementById('resDlBtn').href=d;document.getElementById('resViewBtn').href=d;document.getElementById('resFileInfo').style.display='block';document.getElementById('resDlBtn').style.pointerEvents='auto';document.getElementById('resViewBtn').style.pointerEvents='auto';}else{document.getElementById('resDlBtn').style.opacity='.4';document.getElementById('resDlBtn').style.pointerEvents='none';document.getElementById('resViewBtn').style.opacity='.4';document.getElementById('resViewBtn').style.pointerEvents='none';document.getElementById('resDlBtn').textContent='No Resume Uploaded //';}}
+loadResume();
+document.getElementById('resAdminLoginBtn').addEventListener('click',()=>{if(document.getElementById('resAdminPass').value==='navraj@admin2025'){document.getElementById('resUploadArea').style.display='block';document.getElementById('resAdminLoginBtn').style.display='none';document.getElementById('resAdminPass').style.display='none';document.getElementById('resLoginErr').style.display='none';}else{document.getElementById('resLoginErr').style.display='block';}});
+document.getElementById('resFileInput').addEventListener('change',function(){const f=this.files[0];if(!f)return;if(f.size>10*1024*1024){document.getElementById('resUploadInfo').textContent='File too large (max 10MB)';document.getElementById('resUploadInfo').style.color='var(--red)';document.getElementById('resUploadInfo').style.display='block';return;}const r=new FileReader();r.onload=e=>{try{localStorage.setItem(RES_KEY,e.target.result);document.getElementById('resUploadInfo').textContent='✓ Resume uploaded: '+f.name;document.getElementById('resUploadInfo').style.color='var(--green)';document.getElementById('resUploadInfo').style.display='block';loadResume();}catch{document.getElementById('resUploadInfo').textContent='Storage error — file may be too large.';document.getElementById('resUploadInfo').style.color='var(--red)';document.getElementById('resUploadInfo').style.display='block';}};r.readAsDataURL(f);});
 
 // Init
 renderCerts();renderMats();
